@@ -1,0 +1,5 @@
+cron:
+- description: "not-that-movie: generate new translations"
+  url: /_generate?batch_size=2
+  schedule: every day 05:13
+  target: not-that-movie

@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+
+
+<html lang="en">
+	<head>
+		<title>Not That Movie</title>
+		<meta charset="UTF-8" />
+		<meta name="descriptions" content="Badly translated movie plots">
+		<link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
+
+		<!-- bootstrap -->
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<!-- jQuery, Popper and Bootstrap -->
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+
+		<script type=text/javascript>
+			$SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
+		</script>
+
+		<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+
+		<script type=text/javascript>
+
+			// Generate an initial plot on load and set a handler to the generate button
+			$(function() {
+				$(document).ready(setContent);
+			  	$("#generate_button").bind("click", setContent);
+			});
+			
+			/* Send a request to the backend for a new description and display it the
+			description container.
+			*/ 
+			function setContent() {
+				$.ajax({
+					beforeSend: function(request) {
+						request.setRequestHeader("X-Button-Callback", "true");
+						// Hide content and display the loader
+						$("#movie_title").empty();
+						$("#original_title").empty();
+						$("#plot").empty();
+						$("#cast").empty();
+						$("#metadata").empty();
+						$(".infobox-data-row").remove();
+						$("#loader").show();
+					},
+					dataType: "json",
+					url: $SCRIPT_ROOT + "/_get",
+					success: function(data) {
+						// Set description content and hide loader
+						$("#loader").hide();
+						$("#movie_title").html(data.metadata.title);
+						$("#original_title").html("(" + data.metadata.original_title + ")");
+						$("#plot").html(data.plot);
+						$("#cast").html(data.cast);
+						updateInfobox(data);
+					},
+					error: function(jqXHR, textStatus, errorThrown) {
+						$("#movie_title").html("<h1>Something went wrong, try again</h1>");
+						$("#cast").empty();
+						$("#metadata").empty();
+						$("#loader").empty();
+					}
+				});
+				return false;
+			}
+
+			/* Update the poster image and key, value fields in the infobox. */
+			function updateInfobox(data) {
+				$("#infobox_image").attr("src", data.img);
+
+				// Dynamically create a table row for each infobox item
+				var tableHtml = "";
+				for (attribute in data.infobox) {
+					tableHtml += `<tr class="infobox-data-row">
+						<th>${attribute}</th>
+						<td>${data.infobox[attribute]}</td>
+					</tr>`
+				}
+				$("#infobox tr:last").after(tableHtml);
+			}
+		</script>
+
+	</head>
+	<body>
+
+	<div class="container">
+
+		<div class="row">
+			<!-- left margin -->
+			<div class="hidden-xs col-md-1" id="left-margin"></div>
+
+			<!-- Middle section for content -->
+			<div id="content" class="col-xs-12 col-md-10">
+				<div class="page-header">
+				 	<h1>Not That Movie</h1> 
+				 	<p>Badly translated movie synopses</p>
+				</div>
+				<hr>
+
+				<!-- Container for the description and a loader div -->
+				<div class="card">
+					<div class="card-body">
+						<div>
+							<h2 id="movie_title"></h2>
+							<h3 id="original_title"></h3>
+							<table id="infobox">
+								<tr>
+									<td colspan="2">
+										<img id="infobox_image"
+											src="{{ url_for('static', filename='default_poster.png') }}"
+											alt="Poster image"
+										>
+									</td>
+								</tr>
+							</table>
+							<div id="plot"></div>
+						</div>
+
+						<h3 class="section-title">Cast</h3>
+						<div id="cast"></div>
+						<div id="metadata"></div>
+
+						<!-- A spinning loader to be displayed while new description is being loaded -->
+						<div class="text-center" id="loader">
+							<div class="spinner-border text-primary" role="status">
+								<span class="sr-only">Loading...</span>
+							</div>
+						</div>
+
+						<hr id="description_divider"/>
+						<div class="row justify-content-center">
+							<button type="submit" class="btn btn-primary" id="generate_button">Generate</button>
+						</div>
+					</div>
+				</div>	
+
+			</div>
+
+			<!-- right margin -->
+			<div class="hidden-xs col-md-1" id="right-margin"></div>
+
+		</div>
+	</div>
+
+
+    </body>
+</html>
