@@ -20,8 +20,9 @@ def test_parse_title(test_name, expected):
     assert utils.parse_title(test_name) == expected
 
 def test_format_as_html():
+    """Test html formatting of parsed content."""
     description = {
-        "plot": "one\ntwo\nthree\nfour.",
+        "plot": "one\n\ntwo\n\nthree\n\nfour.",
         "cast": "James as lion\nJohn as submarine"
     }
 
@@ -40,6 +41,7 @@ def test_format_as_html():
         ("one two.three", "one two.three")
     ])
 def test_cleanup_translation(test_string, expected):
+    """Test translation generated common tokens."""
     assert utils.cleanup_translation(test_string) == expected
 
     # Longer sample

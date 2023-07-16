@@ -47,7 +47,7 @@ def format_as_html(content):
 	"""Convert the plot and cast sections of a stored
 	movie file to html.
 	"""
-	plot = "".join([ f"<p>{p}</p>" for p in content["plot"].split("\n") if p ])
+	plot = "".join([ f"<p>{p}</p>" for p in content["plot"].split("\n\n") if p ])
 	cast_items = [ f"<li>{p}</li>" for p in content["cast"].split("\n") if p ]
 	cast = "<ul>" + "".join(cast_items) + "</ul>"
 

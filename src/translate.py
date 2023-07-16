@@ -100,7 +100,7 @@ def generate_translation(title, k, target_language="en"):
 		text = utils.cleanup_translation(text)
 		translated_sections[section] = text
 
-	# Convert infobox back to a dict and add original title
+	# Convert infobox back to a dict
 	translated_sections["infobox"] = utils.newline_string_to_dict(translated_sections["infobox"])
 
 	# Move translated title to a dedicated metadata section and add the original title
@@ -136,23 +136,46 @@ def make_soup(title):
 
 def get_title(soup):
 	"""Parse movie title from the right hand infobox table header."""
-	return soup.find("th", class_="infobox-above summary").text
+	return soup.find("th", class_="infobox-above summary").text.strip()
 
 def get_plot(soup):
-	"""Get content from the Plot section."""
-	return "".join([ tag.text for tag in soup.select("section > h2#Plot")[0].next_siblings ])
+	"""Get content from the Plot section.
+	Return
+		string delimited by double newline
+	"""
+	paragraphs = [ tag.text.strip() for tag in soup.select("section > h2#Plot")[0].next_siblings ]
+
+	# The raw parsed text content likely includes various whitespace character
+	# form inline elements such as <a>.
+	# Cleanup each paragraph and merge to a single string
+	char_map = str.maketrans({
+		"\n": " ",
+		"\t": ""
+	})
+	content = "\n\n".join([ p.translate(char_map) for p in paragraphs if p ])
+	return content
 
 def get_cast(soup):
-	"""Get content from Cast section
-	This is usually a <ul> list of items, actual page hierarchy varies.
-	Try multiple element combinations.
+	"""Get content from Cast section.
+	The element hierarchy varies by page; get content from all
+	<div>, <p> and <li> elements inside a <ul>
 	Return:
 		newline delimitted string
 	"""
-	return "".join([ tag.text
-		 for tag in soup.select("#Cast, #Voice_cast, #Casting")[0].next_siblings 
-		 if tag.name in ("div", "ul", "p")
-		 ])
+	paragraphs = []
+	for tag in soup.select("#Cast, #Voice_cast, #Casting")[0].next_siblings:
+		if tag.name in ("div", "p"):
+			paragraphs.append(tag.text.strip())
+		elif tag.name == "ul":
+			paragraphs.extend([item.text for item in tag.select("li")])
+
+	char_map = str.maketrans({
+		"\n": " ",
+		"\t": ""
+	})
+
+	content = "\n".join([ p.translate(char_map) for p in paragraphs if p ])
+	return content
 
 def get_infobox(soup):
 	"""Get selected metadata from the right side info table.
@@ -181,7 +204,7 @@ def get_infobox(soup):
 	for tag in soup.select("table.infobox > tbody > tr"):
 		if any([header in tag.text for header in KEY_HEADERS]):
 			try:
-				header = tag.find("th").text
+				header = tag.find("th").text.strip("\n\t")
 				value = tag.find("td").text.strip("\n")
 				metadata[header] = value
 			except AttributeError as e:
