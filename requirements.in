@@ -5,3 +5,5 @@ httpx
 googletrans==4.0.0-rc1
 google-cloud-secret-manager
 google-cloud-storage
+pytest
+pytest-schema
