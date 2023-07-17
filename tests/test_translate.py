@@ -5,8 +5,12 @@ from unittest.mock import patch, Mock
 from bs4 import BeautifulSoup
 from pytest_schema import schema
 
-from src import translate
-
+# Mock Google Cloud client creations before importing the main library
+with (
+    patch("google.cloud.storage.Client"),
+    patch("google.cloud.secretmanager.SecretManagerServiceClient")
+):
+    from src import translate
 
 
 @pytest.fixture
