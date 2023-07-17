@@ -52,7 +52,8 @@ def batch_translate_and_upload(batch_size, k=2):
 			)
 
 			# Generate a translation
-			result = generate_translation(url_title, k)
+			soup = make_soup(url_title)
+			result = generate_translation(soup, k)
 			# Add a (public) link to the related image
 			result["img"] = img_blob.public_url
 
@@ -64,15 +65,13 @@ def batch_translate_and_upload(batch_size, k=2):
 		except exceptions.NotValidArticleException as e:
 			logging.error(e.args[0])
 
-def generate_translation(title, k, target_language="en"):
+def generate_translation(soup, k, target_language="en"):
 	"""Translate a single Wikipedia movie article.
 	Args:
-		title (str): Wikiepdia page title, formatted either as in the
-			url or as in the page title.
+		soup (bs4.BeautifulSoup): The soup object of a Wikiepdia movie article
 		k (int): number of intermediary languages to translate to
 		target_language (str): language code for the final output language
 	"""
-	soup = make_soup(title)
 	parsed_info_data = get_infobox(soup)
 	sections_to_translate = {
 		"title": get_title(soup),
@@ -214,7 +213,8 @@ def get_infobox(soup):
 
 def print_sample_description(title, k):
 	"""Generate and print a sample translation description from and input title."""
-	res = generate_translation(title, k)
+	soup = make_soup(title)
+	res = generate_translation(soup, k)
 	print(json.dumps(res, indent=2))
 
 
