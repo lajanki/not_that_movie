@@ -1,7 +1,9 @@
 import os.path
 import pytest
+from unittest.mock import patch, Mock
 
 from bs4 import BeautifulSoup
+from pytest_schema import schema
 
 from src import translate
 
@@ -70,3 +72,20 @@ def test_get_infobox(mock_soup):
     assert translate.get_infobox(mock_soup) == expected
 
 
+@patch("src.translate.translator")
+def test_generated_schema(mock_translate, mock_soup):
+    """Validate high level schema of the translated description."""
+    mock_translate.translate.return_value = Mock(text="")
+
+    translation = translate.generate_translation(mock_soup, 2)
+
+    expected_schema = schema({
+        "plot": str,
+        "cast": str,
+        "infobox": dict,
+        "metadata": {
+            "title": str,
+            "original_title": str
+        }
+    })
+    assert expected_schema.is_valid(translation)
