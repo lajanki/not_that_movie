@@ -5,6 +5,5 @@ instance_class: F2
 
 env_variables:
   ENV: prod
-  OPENAI_API_SECRET_NAME: openai_api_key
 
 service_account: not-that-movie-worker@webhost-common.iam.gserviceaccount.com

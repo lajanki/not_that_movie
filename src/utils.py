@@ -72,5 +72,5 @@ def cleanup_translation(s):
 def get_openai_secret():
 	"""Fetch OpenAI API key from Secret Manager."""
 	client = secretmanager.SecretManagerServiceClient()
-	response = client.access_secret_version(name=f"projects/webhost-common/secrets/{os.environ['OPENAI_API_SECRET_NAME']}/versions/1")
+	response = client.access_secret_version(name="projects/webhost-common/secrets/openai_api_key/versions/1")
 	return response.payload.data.decode()

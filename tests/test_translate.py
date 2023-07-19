@@ -8,8 +8,7 @@ from pytest_schema import schema
 # Mock Google Cloud client creations before importing the main library
 with (
     patch("google.cloud.storage.Client"),
-    patch("google.cloud.secretmanager.SecretManagerServiceClient"),
-    patch.dict(os.environ, {"OPENAI_API_SECRET_NAME": ""})
+    patch("google.cloud.secretmanager.SecretManagerServiceClient")
 ):
     from src import translate
 

@@ -6,11 +6,10 @@ import openai
 from src import utils
 
 
-openai.api_key = utils.get_openai_secret()
-
-
 def create_image(prompt):
 	"""Generate an image using openai DALL-E model."""
+	openai.api_key = utils.get_openai_secret()
+
 	response = openai.Image.create(
 		prompt=prompt,
 		n=1,
