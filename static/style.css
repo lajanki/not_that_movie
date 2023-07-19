@@ -1,3 +1,19 @@
+body {
+	background: white;
+}
+
+h1 {
+	font-size: 28px;
+}
+
+h2 {
+	font-size: 24px;
+}
+
+h3 {
+	font-size: 20px;
+}
+
 div.page-header {
 	margin-bottom: 0px;
 	color: black;
@@ -62,14 +78,8 @@ div.spinner-border {
 	width: auto;
 }
 
-#description-container {
-	min-height: 500px;
-	display: flex;
-	flex-direction: column;
-	justify-content: center;
-}
-
 table#infobox {
+	table-layout: fixed;
 	float: right;
 	border: 1px solid #a2a9b1;
 	border-spacing: 3px;
@@ -83,30 +93,28 @@ table#infobox {
 	width: 22em
 }
 
-td#infobox_image {
+td#infobox-image {
 	text-align: center;
 }
 
-h1 {
-	font-size: 28px;
+th.infobox-header {
+	vertical-align: top;
+    padding-left: 0.5em;
+    padding-right: 0.5em;
+    padding-bottom: 0.2em;
 }
 
-h2 {
-	font-size: 24px;
-}
-
-h3 {
-	font-size: 20px;
-}
-
-h4 {
-	font-size: 18px;
-	font-weight: bold;
+td.infobox-data {
+    padding-right: 0.4em;
 }
 
 .section-title {
 	margin-top: 1em;
 	border-bottom: 1px solid #a2a9b1;
+}
+
+#cast > ul {
+	padding-right: 10em;
 }
 
 #movie_title {
@@ -115,10 +123,6 @@ h4 {
 
 #original_title {
 	border-bottom: 1px solid #a2a9b1;
-}
-
-body {
-	background: white;
 }
 
 #generate_button {

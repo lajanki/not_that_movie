@@ -71,14 +71,14 @@
 
 			/* Update the poster image and key, value fields in the infobox. */
 			function updateInfobox(data) {
-				$("#infobox_image").attr("src", data.img);
+				$("#infobox-image-ref").attr("src", data.img);
 
 				// Dynamically create a table row for each infobox item
 				var tableHtml = "";
 				for (attribute in data.infobox) {
 					tableHtml += `<tr class="infobox-data-row">
-						<th>${attribute}</th>
-						<td>${data.infobox[attribute]}</td>
+						<th class="infobox-header">${attribute}</th>
+						<td class="infobox-data">${data.infobox[attribute]}</td>
 					</tr>`
 				}
 				$("#infobox tr:last").after(tableHtml);
@@ -88,14 +88,14 @@
 	</head>
 	<body>
 
-	<div class="container">
+	<div class="container-fluid">
 
 		<div class="row">
 			<!-- left margin -->
-			<div class="hidden-xs col-md-1" id="left-margin"></div>
+			<div class="hidden-xs col-md-2" id="left-margin"></div>
 
 			<!-- Middle section for content -->
-			<div id="content" class="col-xs-12 col-md-10">
+			<div id="content" class="col-xs-12 col-md-8">
 				<div class="page-header">
 				 	<h1>Not That Movie</h1> 
 				 	<p>Badly translated movie synopses</p>
@@ -110,10 +110,11 @@
 							<h3 id="original_title"></h3>
 							<table id="infobox">
 								<tr>
-									<td colspan="2">
-										<img id="infobox_image"
+									<td id="infobox-image" colspan="2">
+										<img id="infobox-image-ref"
 											src="{{ url_for('static', filename='default_poster.png') }}"
-											alt="Poster image"
+											alt="Poster image created with DALL·E 2"
+											title="Poster image created with DALL·E 2"
 										>
 									</td>
 								</tr>
@@ -138,11 +139,11 @@
 						</div>
 					</div>
 				</div>	
-
 			</div>
 
+
 			<!-- right margin -->
-			<div class="hidden-xs col-md-1" id="right-margin"></div>
+			<div class="hidden-xs col-md-2" id="right-margin"></div>
 
 		</div>
 	</div>
