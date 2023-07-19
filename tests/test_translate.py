@@ -1,4 +1,4 @@
-import os.path
+import os
 import pytest
 from unittest.mock import patch, Mock
 
@@ -8,7 +8,8 @@ from pytest_schema import schema
 # Mock Google Cloud client creations before importing the main library
 with (
     patch("google.cloud.storage.Client"),
-    patch("google.cloud.secretmanager.SecretManagerServiceClient")
+    patch("google.cloud.secretmanager.SecretManagerServiceClient"),
+    patch.dict(os.environ, {"OPENAI_API_SECRET_NAME": ""})
 ):
     from src import translate
 
