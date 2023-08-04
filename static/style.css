@@ -61,17 +61,14 @@ div.spinner-border {
 
 #left-margin {
 	background-color: #f8f9fa;
-	width: 20%;
 }
 
 #right-margin {
 	background-color: #f8f9fa;
-	width: 20%;
 }
 
 #content {
 	border-radius: 10px;
-	width: 60%;
 }
 
 .container {
@@ -97,6 +94,11 @@ td#infobox-image {
 	text-align: center;
 }
 
+#infobox-image-ref {
+	width: 100%;
+	height: auto;
+}
+
 th.infobox-header {
 	vertical-align: top;
     padding-left: 0.5em;
@@ -114,7 +116,7 @@ td.infobox-data {
 }
 
 #cast > ul {
-	padding-right: 10em;
+	padding-right: 25%;
 }
 
 #movie_title {
