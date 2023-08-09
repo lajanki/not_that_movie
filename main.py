@@ -19,6 +19,10 @@ app = Flask(__name__)
 def index():
     return render_template("index.html")
 
+@app.route("/movie_index")
+def movie_index():
+    return render_template("movie_index.html")
+
 @app.route("/_generate")
 def generate_descriptions():
     """Generate a set of new movie descriptions and write to Cloud Storage."""
@@ -34,14 +38,23 @@ def generate_descriptions():
     
 @app.route("/_get")
 def fetch_description():
-    """Fetch a random movie description."""
-    if "X-Button-Callback" in request.headers:
+    """Fetch a movie description from the bucket; either the one given
+    as argument or a randomly chosen one.
+    """
+    path = request.args.get("path")
+    if path:
+        data = gcs_utils.download_description(path)
+    else:
         data = gcs_utils.download_random()
-        data = utils.format_as_html(data)
 
-        return data, 200
+    data = utils.format_as_html(data)
+    return data, 200
     
-    abort(500, "Bad request")
+@app.route("/_get_movie_list")
+def fetch_movie_index():
+    """Fetch list of current movies from Cloud Storage."""
+    data = gcs_utils.fetch_all()
+    return data, 200
     
 
 if __name__ == "__main__":
