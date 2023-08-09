@@ -71,11 +71,11 @@ function listMovies() {
         url: "/_get_movie_list",
         success: function(data) {
             for (const movie in data) {
-                var li = $("<li>").append(movie);
+                var li = $(`<li><a href="#">${movie}</a></li>`)
                 li.attr("data-bucket-path", data[movie]);
 
                 li.on("click", function() { setContentTo(data[movie]) });
-                $("#movie-list").append(li);
+                $("#movie-list > ul").append(li);
             }
         }
     })
