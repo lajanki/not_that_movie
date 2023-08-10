@@ -42,13 +42,7 @@ ul.nav a:hover {
 	color: #9c5b84 !important; 
 }
 
-.card {
-	background-color:white;
-	margin-left: 10%;
-	margin-right: 10%;
-}
-
-#loader {
+div#loader {
 	margin-bottom: 25px;
 }
 
@@ -57,21 +51,17 @@ div.spinner-border {
 	height: 4rem;
 }
 
-#left-margin {
+div#left-margin {
 	background-color: #f8f9fa;
 }
 
-#right-margin {
+div#right-margin {
 	background-color: #f8f9fa;
 }
 
-#content {
+div#content {
     overflow-y: auto;
     height: 100vh;
-}
-
-.container {
-	width: auto;
 }
 
 table#infobox {
@@ -93,7 +83,7 @@ td#infobox-image {
 	text-align: center;
 }
 
-#infobox-image-ref {
+img#infobox-image-ref {
 	width: 100%;
 	height: auto;
 }
@@ -108,13 +98,12 @@ th.infobox-header {
 td.infobox-data {
     padding-right: 0.4em;
 }
-
 .section-title {
 	margin-top: 1em;
 	border-bottom: 1px solid #a2a9b1;
 }
 
-#cast > ul {
+div#cast > ul {
 	padding-right: 25%;
 }
 
@@ -126,7 +115,7 @@ td.infobox-data {
 	border-bottom: 1px solid #a2a9b1;
 }
 
-#generate_button {
+button#generate_button {
 	color: #acd4ff;
 	background-color: #233b58;
 	border-color: #233b58;

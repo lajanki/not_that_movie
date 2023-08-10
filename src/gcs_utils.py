@@ -17,7 +17,7 @@ def upload(contents, destination_blob_name, content_type="text/plain"):
 	blob = bucket.blob(destination_blob_name)
 
 	logging.info("Uploading to gs://%s/%s", BUCKET_NAME, destination_blob_name)
-	blob.upload_from_string(contents, content_type=content_type)	
+	blob.upload_from_string(contents, content_type=content_type)
 	return blob
 
 def download_description(path):
