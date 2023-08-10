@@ -1,7 +1,6 @@
 import json
 import logging
 import random
-from datetime import date
 
 from google.cloud import storage
 
@@ -21,15 +20,24 @@ def upload(contents, destination_blob_name, content_type="text/plain"):
 	blob.upload_from_string(contents, content_type=content_type)
 	return blob
 
+def download_description(path):
+	"""Download the given description from the bucket."""
+	bucket = storage_client.bucket(BUCKET_NAME)
+	blob = bucket.blob(path)
+	return json.loads(blob.download_as_text())
+
 def download_random():
-	"""Download a random description and image from the bucket.
-	Return
-		a dict of the json content and the image bytes.
-	"""
-	blobs = storage_client.list_blobs(BUCKET_NAME)
+	"""Download a random description from the bucket."""
+	blobs = storage_client.list_blobs(BUCKET_NAME, match_glob="**.json")
+	selected_blob = random.choice(list(blobs))
+	return json.loads(selected_blob.download_as_text())
 
-	# Fetch json description content
-	selected_blob = random.choice([ b for b in blobs if b.name.endswith(".json") ])
-	description = json.loads(selected_blob.download_as_text())
-
-	return description
+def fetch_all():
+	"""Create a mapping of unique movie names to their public urls."""
+	blobs = storage_client.list_blobs(BUCKET_NAME, match_glob="**.json")
+	# Sort by movie name
+	descriptions = sorted(blobs, key=lambda b: b.name.split("/")[-2])
+	
+	# The same movie may appear in multiple date prefixes. Return a mapping
+	# of unique movies. 
+	return { b.name.split("/")[-2]: b.name for b in descriptions }

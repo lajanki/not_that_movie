@@ -4,6 +4,6 @@ openai
 httpx
 googletrans==4.0.0-rc1
 google-cloud-secret-manager
-google-cloud-storage
+google-cloud-storage>=2.10.0
 pytest
 pytest-schema

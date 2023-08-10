@@ -3,3 +3,7 @@ cron:
   url: /_generate?batch_size=2
   schedule: every day 05:13
   target: not-that-movie
+  retry_parameters:
+    job_retry_limit: 3
+    min_backoff_seconds: 3600
+    max_doublings: 1
