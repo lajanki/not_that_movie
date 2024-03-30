@@ -37,7 +37,7 @@ pytest
 The project can be run over localhost with Flask development server.
 First start the server with
 ```
-python main.py
+flask run
 ```
 Then, to generate a set of _2_ translations, send a request with
 ```
