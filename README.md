@@ -17,7 +17,7 @@ Movie plots are pregenerated at regular intervals by translating existing plots 
 intermediary languages back to English using Google Translate. Generated plots are stored to a public Cloud Storage bucket
 to be read by the frontend.
 
-Additioanlly a poster image is generated via OpenAI's [DALL-E](https://openai.com/dall-e-2) model.
+Additioanlly, a poster image is generated via OpenAI's [DALL-E](https://openai.com/dall-e-2) model.
 
 ![User flow](./user_flow.png)
 
@@ -29,23 +29,26 @@ App Engine actually requires the file to be called _cron.yaml_. The final config
 
 ### Unit tests
 Unit tests for the Python backend can be run with
-```
+```bash
 pytest
 ```
 
 ### Running locally
 The project can be run over localhost with Flask development server.
 First start the server with
-```
+```bash
 python main.py
 ```
 Then, to generate a set of _2_ translations, send a request with
-```
+```bash
 curl -H "X-Appengine-Cron: 1" http://127.0.0.1:5000/_generate?batch_size=2
 ```
 Resulting plots are stored to the _dev_ bucket.
 
-> **NOTE**: In order to save DALL-E API tokens, this will use a template poster image instead of performing an API call. 
+### Notes:
+ * The Google Translate API is rate limited and each generation request results in multiple API calls. It is better to make several generation calls
+with moderate `batch_size` over a timeframe than to use a large batch size.
+ * This will not generate an image in order to save DALL-E API tokens. Instead a template poster image will be used. 
 
 ### Caveats
 * The project uses a free library for Google Translate: [googletrans](https://github.com/ssut/py-googletrans). It is not an
