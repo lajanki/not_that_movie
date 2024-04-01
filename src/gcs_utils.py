@@ -26,15 +26,15 @@ def download_description(path):
 	blob = bucket.blob(path)
 	return json.loads(blob.download_as_text())
 
-def download_random():
+def download_random_movie():
 	"""Download a random description from the bucket."""
-	blobs = storage_client.list_blobs(BUCKET_NAME, match_glob="**.json")
+	blobs = storage_client.list_blobs(BUCKET_NAME, match_glob="movies/**.json")
 	selected_blob = random.choice(list(blobs))
 	return json.loads(selected_blob.download_as_text())
 
-def fetch_all():
+def fetch_all_movies():
 	"""Create a mapping of unique movie names to their public urls."""
-	blobs = storage_client.list_blobs(BUCKET_NAME, match_glob="**.json")
+	blobs = storage_client.list_blobs(BUCKET_NAME, match_glob="movies/**.json")
 	# Sort by movie name
 	descriptions = sorted(blobs, key=lambda b: b.name.split("/")[-2])
 	
