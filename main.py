@@ -45,7 +45,7 @@ def fetch_description():
     if path:
         data = gcs_utils.download_description(path)
     else:
-        data = gcs_utils.download_random()
+        data = gcs_utils.download_random_movie()
 
     data = utils.format_as_html(data)
     return data, 200
@@ -53,7 +53,7 @@ def fetch_description():
 @app.route("/_get_movie_list")
 def fetch_movie_index():
     """Fetch list of current movies from Cloud Storage."""
-    data = gcs_utils.fetch_all()
+    data = gcs_utils.fetch_all_movies()
     return data, 200
     
 
