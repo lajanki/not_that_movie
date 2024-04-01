@@ -99,10 +99,12 @@ def generate_translation(soup, k, target_language="en"):
 	# Convert infobox back to a dict
 	translated_sections["infobox"] = utils.newline_string_to_dict(translated_sections["infobox"])
 
-	# Move translated title to a dedicated metadata section and add the original title
+	# Move translated title to a dedicated metadata section and add
+	# the original title as well the url search term.
 	translated_sections["metadata"] = {
 		"title": translated_sections.pop("title").title(),
-		"original_title": get_title(soup)
+		"original_title": get_title(soup),
+		"url_title": soup.url_title
 	}
 	
 	return translated_sections
@@ -116,7 +118,7 @@ def generate_language_chain(k, source_language, target_language):
 	return languages
 
 def make_soup(title):
-	"""Fetch html content based on movie title from Wikipedia API
+	"""Fetch html content based on movie title from the Wikipedia API
 	https://en.wikipedia.org/api/rest_v1/#/Page%20content/get_page_html__title_
 	Return:
 		The parsed content of the page as BeautifulSoup object
@@ -124,6 +126,9 @@ def make_soup(title):
 	r = requests.get(f"{BASE_URL}/{title}")
 	r.raise_for_status()
 	soup = BeautifulSoup(r.text, "html.parser")
+
+	# Attach the original search term title to the soup
+	soup.url_title = title
 	
 	# Check that the result contains a plot section
 	if not soup.select("#Plot"):
