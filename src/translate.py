@@ -40,30 +40,31 @@ def batch_translate_and_upload(batch_size, k=2):
 		logging.info("##%s", url_title)
 		logging.info("%s/%s", BASE_URL, url_title)
 
-		title = utils.parse_title(url_title)
 		try:
-			
-			# Generate and upload image
-			prompt = f"{title} Movie Poster"
-			img_blob = gcs_utils.upload(
-				create_image.create_image_by_env[ENV](prompt),
-				f"movies/{date.today().strftime('%Y-%m-%d')}/{title}/image.png",
-				content_type="image/png"
-			)
-
-			# Generate a translation
 			soup = make_soup(url_title)
-			result = generate_translation(soup, k)
-			# Add a (public) link to the related image
-			result["img"] = img_blob.public_url
-
-			gcs_utils.upload(
-				json.dumps(result),
-				f"movies/{date.today().strftime('%Y-%m-%d')}/{title}/description.json"
-			)
-
+			title = get_title(soup)
 		except exceptions.NotValidArticleException as e:
 			logging.error(e.args[0])
+			continue
+			
+		# Generate and upload poster image
+		prompt = f"{title} Movie Poster"
+		img_blob = gcs_utils.upload(
+			create_image.create_image_by_env[ENV](prompt),
+			f"movies/{date.today().strftime('%Y-%m-%d')}/{title}/image.png",
+			content_type="image/png"
+		)
+
+		# Generate a translation
+		result = generate_translation(soup, k)
+		# Add a (public) link to the related image
+		result["img"] = img_blob.public_url
+
+		gcs_utils.upload(
+			json.dumps(result),
+			f"movies/{date.today().strftime('%Y-%m-%d')}/{title}/description.json"
+		)
+
 
 def generate_translation(soup, k, target_language="en"):
 	"""Translate a single Wikipedia movie article.
