@@ -3,6 +3,7 @@ import json
 import logging
 import random
 import requests
+from urllib.parse import quote
 from datetime import date
 
 from bs4 import BeautifulSoup
@@ -13,8 +14,7 @@ from src import (
 	utils,
 	gcs_utils,
 	create_image,
-	ENV,
-	exceptions
+	ENV
 )
 
 
@@ -40,14 +40,14 @@ def batch_translate_and_upload(batch_size, k=2):
 		logging.info("##%s", url_title)
 		logging.info("%s/%s", BASE_URL, url_title)
 
-		try:
-			soup = make_soup(url_title)
-			title = get_title(soup)
-		except exceptions.NotValidArticleException as e:
-			logging.error(e.args[0])
+		soup = make_soup(url_title)
+		if not soup.select("#Plot"):
+			logging.error(f"https://en.wikipedia.org/wiki/{quote(title)} doesn't apper to be a valid movie article.")
 			continue
+
+		title = get_title(soup)
 			
-		# Generate and upload poster image
+		# Generate and upload a poster image
 		prompt = f"{title} Movie Poster"
 		img_blob = gcs_utils.upload(
 			create_image.create_image_by_env[ENV](prompt),
@@ -56,7 +56,14 @@ def batch_translate_and_upload(batch_size, k=2):
 		)
 
 		# Generate a translation
-		result = generate_translation(soup, k)
+		sections_to_translate = {
+			"title": get_title(soup),
+			"plot": get_plot(soup),
+			"cast": get_cast(soup),
+			"infobox": utils.dict_to_newline_string(get_infobox(soup))
+		}
+		result = generate_translation(sections_to_translate, k)
+
 		# Add a (public) link to the related image
 		result["img"] = img_blob.public_url
 
@@ -65,22 +72,15 @@ def batch_translate_and_upload(batch_size, k=2):
 			f"movies/{date.today().strftime('%Y-%m-%d')}/{title}/description.json"
 		)
 
-
-def generate_translation(soup, k, target_language="en"):
+def generate_translation(sections_to_translate, k, target_language="en"):
 	"""Translate a single Wikipedia movie article.
 	Args:
-		soup (bs4.BeautifulSoup): The soup object of a Wikiepdia movie article
+		sections_to_translate (dict): A mapping of sections fron the original article to translate
 		k (int): number of intermediary languages to translate to
 		target_language (str): language code for the final output language
-	"""
-	parsed_info_data = get_infobox(soup)
-	sections_to_translate = {
-		"title": get_title(soup),
-		"plot": get_plot(soup),
-		"cast": get_cast(soup),
-		"infobox": utils.dict_to_newline_string(parsed_info_data)
-	}
-	
+	Return:
+		A dict of the trasnalted section, similar to the input
+	"""	
 	translated_sections = {}
 	chain = generate_language_chain(k, source_language="en", target_language=target_language)
 	language_names = " => ".join([LANGUAGES[code] for code in chain])
@@ -106,7 +106,7 @@ def generate_translation(soup, k, target_language="en"):
 	# Move translated title to a dedicated metadata section and add the original title
 	translated_sections["metadata"] = {
 		"title": translated_sections.pop("title").title(),
-		"original_title": get_title(soup)
+		"original_title": sections_to_translate["title"]
 	}
 	
 	return translated_sections
@@ -129,14 +129,11 @@ def make_soup(title):
 	r.raise_for_status()
 	soup = BeautifulSoup(r.text, "html.parser")
 	
-	# Check that the result contains a plot section
-	if not soup.select("#Plot"):
-		raise exceptions.NotValidArticleException(title)
 	return soup
 
 def get_title(soup):
 	"""Parse movie title from the right hand infobox table header."""
-	return soup.find("th", class_="infobox-above summary").text.strip()
+	return soup.find("th", class_="infobox-above").text.strip()
 
 def get_plot(soup):
 	"""Get content from the Plot section.
