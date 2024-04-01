@@ -7,3 +7,5 @@ env_variables:
   ENV: prod
 
 service_account: not-that-movie-worker@webhost-common.iam.gserviceaccount.com
+
+entrypoint: gunicorn -b :$PORT app:app

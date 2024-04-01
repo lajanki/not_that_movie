@@ -32,10 +32,7 @@ def batch_translate_and_upload(batch_size, k=2):
 		batch_size (int): number of translations to generate
 		k (int): number of intermediary languages to use
 	"""
-	with open("./data/movie_list.txt") as f:
-		titles = [ row.strip() for row in f.readlines() ]
-		
-	titles = random.sample(titles, batch_size)
+	titles = utils.select_weighted_list_of_movie_names(batch_size)
 	for url_title in titles:
 		logging.info("##%s", url_title)
 		logging.info("%s/%s", BASE_URL, url_title)
@@ -47,7 +44,7 @@ def batch_translate_and_upload(batch_size, k=2):
 			prompt = f"{title} Movie Poster"
 			img_blob = gcs_utils.upload(
 				create_image.create_image_by_env[ENV](prompt),
-				f"{date.today().strftime('%Y-%m-%d')}/{title}/image.png",
+				f"movies/{date.today().strftime('%Y-%m-%d')}/{title}/image.png",
 				content_type="image/png"
 			)
 
@@ -59,7 +56,7 @@ def batch_translate_and_upload(batch_size, k=2):
 
 			gcs_utils.upload(
 				json.dumps(result),
-				f"{date.today().strftime('%Y-%m-%d')}/{title}/description.json"
+				f"movies/{date.today().strftime('%Y-%m-%d')}/{title}/description.json"
 			)
 
 		except exceptions.NotValidArticleException as e:
