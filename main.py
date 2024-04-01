@@ -8,6 +8,7 @@ from flask import (
 
 from src import (
 	translate,
+    get_person_info,
     gcs_utils,
     utils
 )
@@ -25,13 +26,17 @@ def movie_index():
 
 @app.route("/_generate")
 def generate_descriptions():
-    """Generate a set of new movie descriptions and write to Cloud Storage."""
+    """Generate a set of new descriptions, either movies or people, and write to Cloud Storage."""
     # Only respond to cron request originating from App Engine
     if "X-Appengine-Cron" in request.headers:
         batch_size = int(request.args["batch_size"])
         k = int(request.args.get("k", 2))
 
-        translate.batch_translate_and_upload(batch_size, k)
+        if request.args.get("type") == "people":
+            get_person_info.batch_translate_and_upload(batch_size, k)
+        else:
+            translate.batch_translate_and_upload(batch_size, k)
+
         return "OK", 200
 
     abort(500, "Bad request")
@@ -39,7 +44,7 @@ def generate_descriptions():
 @app.route("/_get")
 def fetch_description():
     """Fetch a movie description from the bucket; either the one given
-    as argument or a randomly chosen one.
+    as argument or a randomly chosen one if no argument provided.
     """
     path = request.args.get("path")
     if path:
@@ -55,7 +60,7 @@ def fetch_movie_index():
     """Fetch list of current movies from Cloud Storage."""
     data = gcs_utils.fetch_all_movies()
     return data, 200
-    
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
