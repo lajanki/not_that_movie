@@ -73,7 +73,7 @@ def test_get_infobox(mock_soup):
         "Budget": "$11 million[lower-alpha 1][5]",
         "Box office": "$184.7 million[5][6]"
     }
-    assert translate.get_infobox(mock_soup) == expected
+    assert translate._get_infobox(mock_soup) == expected
 
 
 @patch("src.translate.translator")

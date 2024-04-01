@@ -1,4 +1,3 @@
-import argparse
 import json
 import logging
 import random
@@ -60,7 +59,7 @@ def batch_translate_and_upload(batch_size, k=2):
 			"title": get_title(soup),
 			"plot": get_plot(soup),
 			"cast": get_cast(soup),
-			"infobox": utils.dict_to_newline_string(get_infobox(soup))
+			"infobox": utils.dict_to_newline_string(get_movie_infobox(soup))
 		}
 		result = generate_translation(sections_to_translate, k)
 
@@ -174,12 +173,34 @@ def get_cast(soup):
 	content = "\n".join([ p.translate(char_map) for p in paragraphs if p ])
 	return content
 
-def get_infobox(soup):
+def _get_infobox(soup, headers_to_extract):
+	"""Get selected metadata from the right hand side info table.
+	Args:
+		soup (bs4.BeautifulSoup): the soup object to parse
+		headers_to_extract (list): list of keys to extract
+	Return:
+		a dict of parsed content
+	"""
+	# Loop through all <tr> tags looking for selected header terms
+	# and try to parse its content
+	metadata = {}
+	for tag in soup.select("table.infobox > tbody > tr"):
+		if any([header in tag.text for header in headers_to_extract]):
+			try:
+				header = tag.find("th").text.strip("\n\t")
+				value = tag.find("td").text.strip("\n")
+				metadata[header] = value
+			except AttributeError as e:
+				continue
+	
+	return metadata
+
+def get_movie_infobox(soup):
 	"""Get selected metadata from the right side info table.
 	Return:
 		a dict of parsed content
 	"""
-	KEY_HEADERS = [
+	headers_to_extract = [
 		"Directed by",
 		"Production companies",
 		"Production company",
@@ -195,33 +216,4 @@ def get_infobox(soup):
 		"Language"
 	]
 
-	# Loop through all <tr> tags looking for selected header terms
-	# and try to parse its content
-	metadata = {}
-	for tag in soup.select("table.infobox > tbody > tr"):
-		if any([header in tag.text for header in KEY_HEADERS]):
-			try:
-				header = tag.find("th").text.strip("\n\t")
-				value = tag.find("td").text.strip("\n")
-				metadata[header] = value
-			except AttributeError as e:
-				continue
-	
-	return metadata
-
-def print_sample_description(title, k):
-	"""Generate and print a sample translation description from and input title."""
-	soup = make_soup(title)
-	res = generate_translation(soup, k)
-	print(json.dumps(res, indent=2))
-
-
-if __name__ == "__main__":
-	parser = argparse.ArgumentParser(description="Chain translate Wikpedia movie plots")
-	parser.add_argument("title", help="Wikipedia article title")
-	parser.add_argument("--k", help="Number of intermediary languages", type=int, default=2)
-	parser.add_argument("--target_language", help="Target language for final translation", default="en")
-	args = parser.parse_args()
-	
-	print_sample_description(args.title, args.k)
-
+	return _get_infobox(soup, headers_to_extract)
