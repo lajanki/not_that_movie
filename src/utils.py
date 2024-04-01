@@ -1,18 +1,30 @@
 import json
 import logging
-import os
+import random
 import re
 
+from collections import Counter
 from google.cloud import secretmanager
 
 
 def strip_ref_tokens(text):
-	"""Strip reference tokens, such as [1]."""
+	"""Strip reference tokens from source text, such as [1]."""
 	return re.sub("(\[.*\])", "", text)
 
 def dict_to_newline_string(dict_):
 	"""Convert a dictionary to a key: value string for translatation
-	purposes. Split each key newlines.
+	purposes. Split each key by newlines.
+	For instance
+		dict_to_newline_string({
+			key1: value1,
+			key2: value2
+		})
+		
+		```
+		key1:value1
+		
+		key2:value2
+		```
 	"""
 	return "\n\n".join([f"{key}:{value}" for key,value in dict_.items()])
 
@@ -64,3 +76,28 @@ def get_openai_secret():
 	client = secretmanager.SecretManagerServiceClient()
 	response = client.access_secret_version(name="projects/webhost-common/secrets/openai_api_key/versions/1")
 	return response.payload.data.decode()
+
+def select_weighted_list_of_movie_names(batch_size):
+	"""Generate a random list of batch_size movie names selected from all the source list files in data/
+	according to the weights in data/weight_config.json.
+	The weights are relative to each other with higher value corresponding to the likelihood of that
+	file being used more often.
+	Return
+		A list of selected movie names
+	"""
+	with open("data/weight_config.json") as f:
+		weight_config = json.load(f)
+
+	# Generate a weighted list of source files to read and convert the list of (potentially) repeated file
+	# names to a Counter
+	sampled_source_files = random.choices(list(weight_config.keys()), weights=weight_config.values(), k=batch_size)
+	c = Counter(sampled_source_files)
+
+	source_titles = []
+	# Select movie names from each chosen file according to the count
+	for file in c:
+		with open(f"data/{file}") as f:
+			titles = [ row.strip() for row in f.readlines() if row.strip() and not row.startswith("#") ]
+			source_titles.extend(random.sample(titles, c[file]))
+
+	return source_titles

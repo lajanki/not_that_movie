@@ -29,13 +29,16 @@ function setContent(path) {
             // Set description content and hide loader
             $("#loader").hide();
             $("#movie_title").html(data.metadata.title);
-            $("#original_title").html("(" + data.metadata.original_title + ")");
+            $("#original_title").html(
+                `<a href="https://en.wikipedia.org/wiki/${data.metadata.url_title}">
+                    (${data.metadata.original_title})</a>`
+            );
             $("#plot").html(data.plot);
             $("#cast").html(data.cast);
             updateInfobox(data);
         },
         error: function(jqXHR, textStatus, errorThrown) {
-            $("#movie_title").html("<h1>Something went wrong, try again</h1>");
+            $("#movie_title").html("<h1>Something went wrong, try again</h1>"); 
             $("#cast").empty();
             $("#metadata").empty();
             $("#loader").empty();
