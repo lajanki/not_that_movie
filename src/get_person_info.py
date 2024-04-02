@@ -28,7 +28,7 @@ def batch_translate_and_upload(batch_size, k=2):
 		title = translate.get_title(soup)
 			
 		# Generate and upload a poster image
-		prompt = "A Famous actor"
+		prompt = get_person_portrait_prompt()
 		img_blob = gcs_utils.upload(
 			create_image.create_image_by_env[ENV](prompt),
 			f"people/{date.today().strftime('%Y-%m-%d')}/{title}/image.png",
@@ -42,9 +42,11 @@ def batch_translate_and_upload(batch_size, k=2):
 			"infobox": utils.dict_to_newline_string(get_person_infobox(soup))
 		}
 		result = translate.generate_translation(sections_to_translate, k)
-
-		# Add a (public) link to the related image
 		result["img"] = img_blob.public_url
+		result["metadata"].update({
+			"original_title": translate.get_title(soup),
+			"url_title": url_title
+		})
 
 		gcs_utils.upload(
 			json.dumps(result),
@@ -104,3 +106,9 @@ def get_full_people_list():
 			 if row.strip() and not row.startswith("#") ]
 	
 	return people
+
+def get_person_portrait_prompt():
+	"""Select a random prompt for a person portrait image."""
+	with open("data/portrait_prompts.txt") as f:
+		prompts = [ row.strip() for row in f.readlines() if row.strip() and not row.startswith("#") ]
+	return random.choice(prompts)
