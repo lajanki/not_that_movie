@@ -77,7 +77,7 @@ def test_get_infobox(mock_soup):
 
 
 @patch("src.translate.translator")
-def test_generated_schema(mock_translate, mock_soup):
+def test_generated_schema(mock_translate):
     """Validate high level schema of the translated description."""
     mock_translate.translate.return_value = Mock(text="")
 
@@ -85,7 +85,7 @@ def test_generated_schema(mock_translate, mock_soup):
         "title": "A title",
         "plot": "Meaningful description.",
         "cast": "Tom Skellick as Jack\nNick Hardfloor as The Hammer",
-        "infobox": "key1: value1\n\nkey2:value2"
+        "infobox": "key1:value1\n\nkey2:value2"
     }
     translation = translate.generate_translation(sections_to_translate, 2)
 
