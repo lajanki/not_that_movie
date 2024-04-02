@@ -1,8 +1,8 @@
-import argparse
 import json
 import logging
 import random
 import requests
+from urllib.parse import quote
 from datetime import date
 
 from bs4 import BeautifulSoup
@@ -13,8 +13,7 @@ from src import (
 	utils,
 	gcs_utils,
 	create_image,
-	ENV,
-	exceptions
+	ENV
 )
 
 
@@ -37,46 +36,53 @@ def batch_translate_and_upload(batch_size, k=2):
 		logging.info("##%s", url_title)
 		logging.info("%s/%s", BASE_URL, url_title)
 
-		title = utils.parse_title(url_title)
-		try:
+		soup = make_soup(url_title)
+		if not soup.select("#Plot"):
+			logging.error(f"https://en.wikipedia.org/wiki/{quote(title)} doesn't apper to be a valid movie article.")
+			continue
+
+		title = get_title(soup)
 			
-			# Generate and upload image
-			prompt = f"{title} Movie Poster"
-			img_blob = gcs_utils.upload(
-				create_image.create_image_by_env[ENV](prompt),
-				f"movies/{date.today().strftime('%Y-%m-%d')}/{title}/image.png",
-				content_type="image/png"
-			)
+		# Generate and upload a poster image
+		prompt = f"{title} Movie Poster"
+		img_blob = gcs_utils.upload(
+			create_image.create_image_by_env[ENV](prompt),
+			f"movies/{date.today().strftime('%Y-%m-%d')}/{title}/image.png",
+			content_type="image/png"
+		)
 
-			# Generate a translation
-			soup = make_soup(url_title)
-			result = generate_translation(soup, k)
-			# Add a (public) link to the related image
-			result["img"] = img_blob.public_url
+		# Generate a translation
+		sections_to_translate = {
+			"title": get_title(soup),
+			"plot": get_plot(soup),
+			"cast": get_cast(soup),
+			"infobox": utils.dict_to_newline_string(get_movie_infobox(soup))
+		}
+		result = generate_translation(sections_to_translate, k)
 
-			gcs_utils.upload(
-				json.dumps(result),
-				f"movies/{date.today().strftime('%Y-%m-%d')}/{title}/description.json"
-			)
+		# Add the original titles
+		result["metadata"].update({
+			"original_title": get_title(soup),
+			"url_title": url_title
+		})
 
-		except exceptions.NotValidArticleException as e:
-			logging.error(e.args[0])
+		# Add a (public) link to the related image
+		result["img"] = img_blob.public_url
 
-def generate_translation(soup, k, target_language="en"):
+		gcs_utils.upload(
+			json.dumps(result),
+			f"movies/{date.today().strftime('%Y-%m-%d')}/{title}/description.json"
+		)
+
+def generate_translation(sections_to_translate, k, target_language="en"):
 	"""Translate a single Wikipedia movie article.
 	Args:
-		soup (bs4.BeautifulSoup): The soup object of a Wikiepdia movie article
+		sections_to_translate (dict): A mapping of sections fron the original article to translate
 		k (int): number of intermediary languages to translate to
 		target_language (str): language code for the final output language
-	"""
-	parsed_info_data = get_infobox(soup)
-	sections_to_translate = {
-		"title": get_title(soup),
-		"plot": get_plot(soup),
-		"cast": get_cast(soup),
-		"infobox": utils.dict_to_newline_string(parsed_info_data)
-	}
-	
+	Return:
+		A dict of the trasnalted section, similar to the input
+	"""	
 	translated_sections = {}
 	chain = generate_language_chain(k, source_language="en", target_language=target_language)
 	language_names = " => ".join([LANGUAGES[code] for code in chain])
@@ -99,12 +105,9 @@ def generate_translation(soup, k, target_language="en"):
 	# Convert infobox back to a dict
 	translated_sections["infobox"] = utils.newline_string_to_dict(translated_sections["infobox"])
 
-	# Move translated title to a dedicated metadata section and add
-	# the original title as well the url search term.
+	# Move translated title to a dedicated metadata section
 	translated_sections["metadata"] = {
-		"title": translated_sections.pop("title").title(),
-		"original_title": get_title(soup),
-		"url_title": soup.url_title
+		"title": translated_sections.pop("title").title()
 	}
 	
 	return translated_sections
@@ -130,14 +133,11 @@ def make_soup(title):
 	# Attach the original search term title to the soup
 	soup.url_title = title
 	
-	# Check that the result contains a plot section
-	if not soup.select("#Plot"):
-		raise exceptions.NotValidArticleException(title)
 	return soup
 
 def get_title(soup):
 	"""Parse movie title from the right hand infobox table header."""
-	return soup.find("th", class_="infobox-above summary").text.strip()
+	return soup.find("th", class_="infobox-above").text.strip()
 
 def get_plot(soup):
 	"""Get content from the Plot section.
@@ -178,12 +178,34 @@ def get_cast(soup):
 	content = "\n".join([ p.translate(char_map) for p in paragraphs if p ])
 	return content
 
-def get_infobox(soup):
+def _get_infobox(soup, headers_to_extract):
+	"""Get selected metadata from the right hand side info table.
+	Args:
+		soup (bs4.BeautifulSoup): the soup object to parse
+		headers_to_extract (list): list of keys to extract
+	Return:
+		a dict of parsed content
+	"""
+	# Loop through all <tr> tags looking for selected header terms
+	# and try to parse its content
+	metadata = {}
+	for tag in soup.select("table.infobox > tbody > tr"):
+		if any([header in tag.text for header in headers_to_extract]):
+			try:
+				header = tag.find("th").text.strip("\n\t")
+				value = tag.find("td").text.strip("\n")
+				metadata[header] = value
+			except AttributeError as e:
+				continue
+	
+	return metadata
+
+def get_movie_infobox(soup):
 	"""Get selected metadata from the right side info table.
 	Return:
 		a dict of parsed content
 	"""
-	KEY_HEADERS = [
+	headers_to_extract = [
 		"Directed by",
 		"Production companies",
 		"Production company",
@@ -199,33 +221,4 @@ def get_infobox(soup):
 		"Language"
 	]
 
-	# Loop through all <tr> tags looking for selected header terms
-	# and try to parse its content
-	metadata = {}
-	for tag in soup.select("table.infobox > tbody > tr"):
-		if any([header in tag.text for header in KEY_HEADERS]):
-			try:
-				header = tag.find("th").text.strip("\n\t")
-				value = tag.find("td").text.strip("\n")
-				metadata[header] = value
-			except AttributeError as e:
-				continue
-	
-	return metadata
-
-def print_sample_description(title, k):
-	"""Generate and print a sample translation description from and input title."""
-	soup = make_soup(title)
-	res = generate_translation(soup, k)
-	print(json.dumps(res, indent=2))
-
-
-if __name__ == "__main__":
-	parser = argparse.ArgumentParser(description="Chain translate Wikpedia movie plots")
-	parser.add_argument("title", help="Wikipedia article title")
-	parser.add_argument("--k", help="Number of intermediary languages", type=int, default=2)
-	parser.add_argument("--target_language", help="Target language for final translation", default="en")
-	args = parser.parse_args()
-	
-	print_sample_description(args.title, args.k)
-
+	return _get_infobox(soup, headers_to_extract)

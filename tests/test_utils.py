@@ -5,19 +5,6 @@ from src import (
 )
 
 
-@pytest.mark.parametrize(
-    "test_name,expected",
-    [
-        ("In_the_Name_of_the_Father_(film)", "In the Name of the Father"),
-        ("Ben-Hur_(1959_film)", "Ben-Hur"),
-        ("Hotel Rwanda", "Hotel Rwanda"),
-        ("Schindler%27s_List", "Schindler%27s List"),
-        ("Terminator 2: Judgment Day", "Terminator 2: Judgment Day"),
-        ("1917_(2019_film)", "1917"),
-        ("Title:Subtitle", "Title:Subtitle")
-    ])
-def test_parse_title(test_name, expected):
-    assert utils.parse_title(test_name) == expected
 
 def test_format_as_html():
     """Test html formatting of parsed content."""

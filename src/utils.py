@@ -46,16 +46,6 @@ def newline_string_to_dict(text):
 
 	return data
 
-def parse_title(url_title):
-	"""Parse a movie title from a url title,
-	eg. Dunkirk_(2017_film) => Dunkirk
-		The Wages of Fear => The Wages of Fear
-	"""
-	PATTERN = "([\w\-:% ]+)(_\(.*\))?"
-	url_title = url_title.replace("_", " ")
-	match = re.search(PATTERN, url_title)
-	return match.group(1).strip()
-
 def format_as_html(content):
 	"""Convert the plot and cast sections of a stored
 	movie file to html.
