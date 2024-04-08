@@ -42,7 +42,7 @@ ul.nav a:hover {
 	color: #9c5b84 !important; 
 }
 
-div#loader {
+div.loader {
 	margin-bottom: 25px;
 }
 
@@ -64,7 +64,7 @@ div#content {
     height: 100vh;
 }
 
-table#infobox {
+table.infobox {
 	table-layout: fixed;
 	float: right;
 	border: 1px solid #a2a9b1;
@@ -79,11 +79,11 @@ table#infobox {
 	width: 22em
 }
 
-td#infobox-image {
+td.infobox-image {
 	text-align: center;
 }
 
-img#infobox-image-ref {
+img.infobox-image-ref {
 	width: 100%;
 	height: auto;
 }

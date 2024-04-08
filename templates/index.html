@@ -45,7 +45,11 @@
 						</li>
 						<li class="nav-item">
 							<a class="nav-link" id="nav-option-movie-index" href="#movie-list" data-toggle="tab" 
-								role="tab" aria-controls="index" aria-selected="false">Index</a>
+								role="tab" aria-controls="index" aria-selected="false">Movie Index</a>
+						</li>
+						<li class="nav-item">
+							<a class="nav-link" id="nav-option-people" href="#people" data-toggle="tab" 
+								role="tab" aria-controls="people" aria-selected="false">People</a>
 						</li>
 					</ul>
 
@@ -54,10 +58,10 @@
 						<div class="tab-pane fade show active" id="home" role="tabpanel" aria-labelledby="nav-option-home">
 							<h2 id="movie_title"></h2>
 							<h3 id="original_title"></h3>
-							<table id="infobox">
+							<table class="infobox" id="movie-info-table">
 								<tr>
-									<td id="infobox-image" colspan="2">
-										<img id="infobox-image-ref"
+									<td class="infobox-image" colspan="2">
+										<img class="infobox-image-ref"
 											src="{{ url_for('static', filename='default_poster.png') }}"
 											alt="Poster image created with DALL·E 2"
 											title="Poster image created with DALL·E 2"
@@ -66,7 +70,7 @@
 								</tr>
 							</table>
 							<!-- A spinning loader to be displayed while new description is being loaded -->
-							<div class="text-center" id="loader">
+							<div class="text-center loader">
 								<div class="spinner-border text-primary" role="status">
 									<span class="sr-only">Loading...</span>
 								</div>
@@ -80,10 +84,42 @@
 							</div>
 
 						</div>
+
+						<!-- tab pane for movie index currently available -->
 						<div class="tab-pane fade" id="movie-list" role="tabpanel" aria-labelledby="nav-option-movie-index">
 							<h2>Movie Index</h2>
 							<ul></ul>
 						</div>
+
+						<!-- tab pane for people -->
+						<div class="tab-pane fade" id="people" role="tabpanel" aria-labelledby="nav-option-people">
+							<h2 id="person_title"></h2>
+							<table class="infobox" id="person-info-table">
+								<tr>
+									<td class="infobox-image" colspan="2">
+										<img class="infobox-image-ref"
+											src="{{ url_for('static', filename='default_poster.png') }}"
+											alt="Image created with DALL·E 2"
+											title="Image created with DALL·E 2"
+										>
+									</td>
+								</tr>
+							</table>
+
+							<div class="text-center loader">
+								<div class="spinner-border text-primary" role="status">
+									<span class="sr-only">Loading...</span>
+								</div>
+							</div>
+
+							<div id="person-description"></div>
+
+							<div class="row justify-content-center">
+								<button type="submit" class="btn btn-primary" id="generate_person_button">Generate</button>
+							</div>
+
+						</div>
+
 					</div>
 				</div>
 

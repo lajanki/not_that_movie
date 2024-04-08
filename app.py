@@ -42,7 +42,7 @@ def generate_descriptions():
 	abort(500, "Bad request")
 	
 @app.route("/_get")
-def fetch_description():
+def fetch_movie_description():
 	"""Fetch a movie description from the bucket; either the one given
 	as argument or a randomly chosen one if no argument provided.
 	"""
@@ -50,7 +50,7 @@ def fetch_description():
 	if path:
 		data = gcs_utils.download_description(path)
 	else:
-		data = gcs_utils.download_random_movie()
+		data = gcs_utils.download_random_content("movies")
 
 	data = utils.format_as_html(data)
 	return data, 200
@@ -59,6 +59,15 @@ def fetch_description():
 def fetch_movie_index():
 	"""Fetch list of current movies from Cloud Storage."""
 	data = gcs_utils.fetch_all_movies()
+	return data, 200
+
+@app.route("/_get_person")
+def fetch_person_description():
+	"""Fetch a random preson from the bucket."""
+	data = gcs_utils.download_random_content("people")
+
+	# convert description to html
+	data["description"] = "".join([ f"<p>{p}</p>" for p in data["description"].split("\n\n") if p ])
 	return data, 200
 
 
