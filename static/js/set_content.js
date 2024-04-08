@@ -24,7 +24,7 @@ function setContent(path) {
             // Hide content and display the loader
             $(".loader").show();
             $("#movie_title").empty();
-            $("#original_title").empty();   
+            $("#original_movie_title").empty();
             $("#plot").empty();
             $("#cast").empty();
             $("#movie-info-table .infobox-data-row").remove();
@@ -37,9 +37,9 @@ function setContent(path) {
             // Set description content and hide loader
             $(".loader").hide();
             $("#movie_title").html(data.metadata.title);
-            $("#original_title").html(
+            $("#original_movie_title").html(
                 `<a href="https://en.wikipedia.org/wiki/${data.metadata.url_title}">
-                    (${data.metadata.original_title})</a>`
+                    (${data.metadata.original_movie_title})</a>`
             );
             $("#plot").html(data.plot);
             $("#cast").html(data.cast);
@@ -47,8 +47,11 @@ function setContent(path) {
         },
         error: function(jqXHR, textStatus, errorThrown) {
             $(".loader").empty();
-            $("#movie_title").html("<h1>Something went wrong, try again</h1>"); 
+            $("#movie_title").html("<h1>Something went wrong, try again</h1>");
+            $("#original_movie_title").empty();
+            $("#plot").empty();
             $("#cast").empty();
+            $("#movie-info-table .infobox-data-row").remove();
         }
     });
     return false;
@@ -102,6 +105,7 @@ function setPersonContent() {
         beforeSend: function(request) {
             request.setRequestHeader("X-Button-Callback", "true");
             $("#person_title").empty();
+            $("#original_person_title").empty();
             $("#person-description").empty();
             $("#person-info-table .infobox-data-row").remove();
             $(".loader").show();
@@ -110,6 +114,11 @@ function setPersonContent() {
         url: "/_get_person",
         success: function(data) {
             $("#person_title").html(data.metadata.title);
+            $("#original_person_title").html(
+                `<a href="https://en.wikipedia.org/wiki/${data.metadata.url_title}">
+                    (${data.metadata.original_title})</a>`
+            );
+
             $("#person-description").html(data.description);
             $(".loader").hide();
             updateInfobox("#person-info-table", data);
@@ -119,8 +128,10 @@ function setPersonContent() {
             $(".infobox-image-ref")[1].title = data.img_prompt + " | Image created with DALL·E 2"
         },
         error: function(jqXHR, textStatus, errorThrown) {
-            $("#person_title").html("<h1>Something went wrong, try again</h1>"); 
+            $("#person_title").html("<h1>Something went wrong, try again</h1>");
+            $("#original_person_title").empty();
             $("#person-description").empty();
+            $("#person-info-table .infobox-data-row").remove();
             $(".loader").empty();
         }
     });
