@@ -43,6 +43,8 @@ def batch_translate_and_upload(batch_size, k=2):
 		}
 		result = translate.generate_translation(sections_to_translate, k)
 		result["img"] = img_blob.public_url
+		result["img_prompt"] = prompt
+
 		result["metadata"].update({
 			"original_title": translate.get_title(soup),
 			"url_title": url_title

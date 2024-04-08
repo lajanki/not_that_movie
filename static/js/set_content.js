@@ -113,6 +113,10 @@ function setPersonContent() {
             $("#person-description").html(data.description);
             $(".loader").hide();
             updateInfobox("#person-info-table", data);
+
+            // update metadata table image labels
+            $(".infobox-image-ref")[1].alt = data.img_prompt + " | Image created with DALL·E 2"
+            $(".infobox-image-ref")[1].title = data.img_prompt + " | Image created with DALL·E 2"
         },
         error: function(jqXHR, textStatus, errorThrown) {
             $("#person_title").html("<h1>Something went wrong, try again</h1>"); 
