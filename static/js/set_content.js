@@ -6,7 +6,7 @@ $(function() {
 	$(document).ready(function() {
         setContent();
         listMovies();
-        //setPersonContent();
+        setPersonContent();
     });
   	$("#generate_button").bind("click", function() {setContent()});
   	$("#generate_person_button").bind("click", function() {setPersonContent()});
