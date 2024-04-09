@@ -16,6 +16,8 @@
 		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
 
 		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+		<!-- bootstrap-icons -->
+		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
 		<!-- Custom stylesheet and javascript-->
 		<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
@@ -41,23 +43,27 @@
 					 <ul class="nav nav-tabs" id="nav-tab-list" role="tablist">
 						<li class="nav-item">
 							<a class="nav-link active" id="nav-option-home" href="#home" data-toggle="tab" 
-								role="tab" aria-controls="home" aria-selected="true">Home</a>
+								role="tab" aria-controls="home" aria-selected="true">Home  <i class="bi bi-camera-reels-fill"></i></a>
 						</li>
 						<li class="nav-item">
 							<a class="nav-link" id="nav-option-movie-index" href="#movie-list" data-toggle="tab" 
-								role="tab" aria-controls="index" aria-selected="false">Index</a>
+								role="tab" aria-controls="index" aria-selected="false">Movie Index <i class="bi bi-list-ol"></i></a>
 						</li>
+						<!-- <li class="nav-item">
+							<a class="nav-link" id="nav-option-people" href="#people" data-toggle="tab" 
+								role="tab" aria-controls="people" aria-selected="false">People <i class="bi bi-person-fill"></i></a>
+						</li> -->
 					</ul>
 
 					<!-- content --> 
 					<div class="tab-content">
 						<div class="tab-pane fade show active" id="home" role="tabpanel" aria-labelledby="nav-option-home">
-							<h2 id="movie_title"></h2>
-							<h3 id="original_title"></h3>
-							<table id="infobox">
+							<h2 class="content-title-main" id="movie_title"></h2>
+							<h3 class="content-title-sub" id="original_movie_title"></h3>
+							<table class="infobox" id="movie-info-table">
 								<tr>
-									<td id="infobox-image" colspan="2">
-										<img id="infobox-image-ref"
+									<td class="infobox-image" colspan="2">
+										<img class="infobox-image-ref"
 											src="{{ url_for('static', filename='default_poster.png') }}"
 											alt="Poster image created with DALL·E 2"
 											title="Poster image created with DALL·E 2"
@@ -66,7 +72,7 @@
 								</tr>
 							</table>
 							<!-- A spinning loader to be displayed while new description is being loaded -->
-							<div class="text-center" id="loader">
+							<div class="text-center loader">
 								<div class="spinner-border text-primary" role="status">
 									<span class="sr-only">Loading...</span>
 								</div>
@@ -80,10 +86,43 @@
 							</div>
 
 						</div>
+
+						<!-- tab pane for movie index currently available -->
 						<div class="tab-pane fade" id="movie-list" role="tabpanel" aria-labelledby="nav-option-movie-index">
 							<h2>Movie Index</h2>
 							<ul></ul>
 						</div>
+
+						<!-- tab pane for people -->
+						<div class="tab-pane fade" id="people" role="tabpanel" aria-labelledby="nav-option-people">
+							<h2 class="content-title-main" id="person_title"></h2>
+							<h3 class="content-title-sub" id="original_person_title"></h3>
+							<table class="infobox" id="person-info-table">
+								<tr>
+									<td class="infobox-image" colspan="2">
+										<img class="infobox-image-ref"
+											src="{{ url_for('static', filename='default_poster.png') }}"
+											alt="Image created with DALL·E 2"
+											title="Image created with DALL·E 2"
+										>
+									</td>
+								</tr>
+							</table>
+
+							<div class="text-center loader">
+								<div class="spinner-border text-primary" role="status">
+									<span class="sr-only">Loading...</span>
+								</div>
+							</div>
+
+							<div id="person-description"></div>
+
+							<div class="row justify-content-center">
+								<button type="submit" class="btn btn-primary" id="generate_person_button">Generate</button>
+							</div>
+
+						</div>
+
 					</div>
 				</div>
 
