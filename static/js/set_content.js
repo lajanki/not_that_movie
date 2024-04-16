@@ -6,7 +6,7 @@ $(function() {
 	$(document).ready(function() {
         setContent();
         listMovies();
-        //setPersonContent();
+        setPersonContent();
     });
   	$("#generate_button").bind("click", function() {setContent()});
   	$("#generate_person_button").bind("click", function() {setPersonContent()});
@@ -59,11 +59,11 @@ function setContent(path) {
 
 /**
  * Update the poster image and key, value fields in the metadata sections.
- * @param  {String} boxId   id of the table element to modify
+ * @param  {String} tableId id of the table element to modify
  * @param  {Object} data    the data to write
  */
-function updateInfobox(boxId, data) {
-    $(".infobox-image-ref").attr("src", data.img);
+function updateInfobox(tableId, data) {
+    $(tableId + " img.infobox-image-ref").attr("src", data.img);
 
     // Dynamically create a table row for each infobox item
     var tableHtml = "";
@@ -73,7 +73,7 @@ function updateInfobox(boxId, data) {
             <td class="infobox-data">${data.infobox[key]}</td>
         </tr>`
     }
-    $(boxId + " tr:last").after(tableHtml);
+    $(tableId + " tr:last").after(tableHtml);
 }
 
 /* Fetch current movie list from the bucket and display as a list. */
