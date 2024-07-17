@@ -39,7 +39,7 @@ function setContent(path) {
             $("#movie_title").html(data.metadata.title);
             $("#original_movie_title").html(
                 `<a href="https://en.wikipedia.org/wiki/${data.metadata.url_title}">
-                    (${data.metadata.original_movie_title})</a>`
+                    (${data.metadata.original_title})</a>`
             );
             $("#plot").html(data.plot);
             $("#cast").html(data.cast);
