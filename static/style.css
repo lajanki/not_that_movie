@@ -118,7 +118,8 @@ div#cast > ul {
 button#generate_button {
 	color: #ffbffa;
 	background-color: #887093;
-	border-color: #764595
+	border-color: #764595;
+	margin-right: 0.1em;
 }
 
 #description_divider {
