@@ -8,8 +8,10 @@ $(function() {
         listMovies();
         setPersonContent();
     });
-  	$("#generate_button").bind("click", function() {setContent()});
-  	$("#generate_person_button").bind("click", function() {setPersonContent()});
+  	$("#generate_button").bind("click", function() {
+        setContent();
+        setPersonContent();
+    });
 });
 
 /**
