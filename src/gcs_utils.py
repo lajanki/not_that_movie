@@ -4,7 +4,7 @@ import random
 
 from google.cloud import storage
 
-from src import ENV
+from src import ENV, constants
 
 
 BUCKET_NAME = f"{ENV}_not_that_movie"
@@ -26,11 +26,19 @@ def download_description(path):
 	blob = bucket.blob(path)
 	return json.loads(blob.download_as_text())
 
-def download_random_content(content_category):
+def download_random_content(content_type):
 	"""Download a random description from the bucket.
 	Either a movie or a person.
+	Args:
+		content_type (Enum): the content type to fetch, one of ContentType Enum
 	"""
-	blobs = storage_client.list_blobs(BUCKET_NAME, match_glob=f"{content_category}/**.json")
+	# Map content type to bucket prefix
+	prefix_map = {
+		constants.ContentType.PERSON: "people",
+		constants.ContentType.MOVIE: "movies"
+	}
+
+	blobs = storage_client.list_blobs(BUCKET_NAME, match_glob=f"{prefix_map[content_type]}/**.json")
 	selected_blob = random.choice(list(blobs))
 	return json.loads(selected_blob.download_as_text())
 

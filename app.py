@@ -10,7 +10,8 @@ from src import (
 	translate,
 	get_person_info,
 	gcs_utils,
-	utils
+	utils,
+	constants
 )
 
 
@@ -29,13 +30,15 @@ def generate_descriptions():
 	"""Generate a set of new descriptions, either movies or people, and write to Cloud Storage."""
 	# Only respond to cron request originating from App Engine
 	if "X-Appengine-Cron" in request.headers:
-		batch_size = int(request.args["batch_size"])
+		batch_size = int(request.args.get("batch_size", 2))
 		k = int(request.args.get("k", 2))
 
-		if request.args.get("type") == "people":
+		if request.args.get("type") == constants.ContentType.PERSON.name:
 			get_person_info.batch_translate_and_upload(batch_size, k)
-		else:
+		elif request.args.get("type") == constants.ContentType.MOVIE.name:
 			translate.batch_translate_and_upload(batch_size, k)
+		else:
+			print("No valid content type provided, skipping content generation.")
 
 		return "OK", 200
 
@@ -50,7 +53,7 @@ def fetch_movie_description():
 	if path:
 		data = gcs_utils.download_description(path)
 	else:
-		data = gcs_utils.download_random_content("movies")
+		data = gcs_utils.download_random_content(constants.ContentType.MOVIE)
 
 	data = utils.format_as_html(data)
 	return data, 200
@@ -64,7 +67,7 @@ def fetch_movie_index():
 @app.route("/_get_person")
 def fetch_person_description():
 	"""Fetch a random preson from the bucket."""
-	data = gcs_utils.download_random_content("people")
+	data = gcs_utils.download_random_content(constants.ContentType.PERSON)
 
 	# convert description to html
 	data["description"] = "".join([ f"<p>{p}</p>" for p in data["description"].split("\n\n") if p ])
