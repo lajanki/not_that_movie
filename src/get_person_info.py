@@ -19,16 +19,18 @@ def batch_translate_and_upload(batch_size, k=2):
 		batch_size (int): number of translations to generate
 		k (int): number of intermediary languages to use
 	"""
-	titles = random.sample(get_full_people_list(), batch_size)
-	for url_title in titles:
+	people_tokens = random.sample(get_people_list(), batch_size)
+	for token in people_tokens:
+		url_title = token.split(";")[1]
 		logging.info("##%s", url_title)
 		logging.info("%s/%s", translate.BASE_URL, url_title)
 
 		soup = translate.make_soup(url_title)
 		title = translate.get_title(soup)
-			
+
 		# Generate and upload a poster image
-		prompt = get_person_portrait_prompt()
+		category = token.split(";")[0]
+		prompt = get_person_portrait_prompt(category)
 		img_blob = gcs_utils.upload(
 			create_image.create_image_by_env[ENV](prompt),
 			f"people/{date.today().strftime('%Y-%m-%d')}/{title}/image.png",
@@ -101,16 +103,28 @@ def get_person_infobox(soup):
 
 	return translate._get_infobox(soup, headers_to_extract)
 
-def get_full_people_list():
-	"""Get a full list of people from source data files."""
-	with open("./data/actors.txt") as f, open("./data/directors.txt") as g:
-		people = [ row.strip() for row in f.readlines() + g.readlines()
-			 if row.strip() and not row.startswith("#") ]
-	
-	return people
+def get_people_list():
+    """Get a list of people from people.txt."""
+    with open("data/people.txt") as f:
+        people = [
+            row.strip()
+            for row in f.readlines()
+            if row.strip() and not row.startswith("#")
+        ]
 
-def get_person_portrait_prompt():
-	"""Select a random prompt for a person portrait image."""
-	with open("data/portrait_prompts.txt") as f:
-		prompts = [ row.strip() for row in f.readlines() if row.strip() and not row.startswith("#") ]
-	return random.choice(prompts)
+    return people
+
+def get_person_portrait_prompt(category):
+    """Select a random prompt for a person portrait image.
+    Args:
+        category (str): the category of prompts to choose from: actor|director
+    """
+    with open("data/portrait_prompts.txt") as f:
+        prompts = [
+            row.split(";")[1].strip()
+            for row in f.readlines()
+            if row.strip()
+            and not row.startswith("#")
+            and row.split(";")[0].strip() == category
+        ]
+    return random.choice(prompts)
