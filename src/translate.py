@@ -1,19 +1,20 @@
 import json
 import logging
 import random
+import re
 import requests
-from urllib.parse import quote
 from datetime import date
+from urllib.parse import quote, unquote
 
 from bs4 import BeautifulSoup
-import httpx
 from googletrans import Translator, LANGUAGES
+import httpx
 
 from src import (
-	utils,
-	gcs_utils,
 	create_image,
-	ENV
+	ENV,
+	gcs_utils,
+	utils,
 )
 
 
@@ -38,10 +39,10 @@ def batch_translate_and_upload(batch_size, k=2):
 
 		soup = make_soup(url_title)
 		if not soup.select("#Plot"):
-			logging.error(f"https://en.wikipedia.org/wiki/{quote(title)} doesn't apper to be a valid movie article.")
+			logging.error(f"https://en.wikipedia.org/wiki/{url_title} doesn't apper to be a valid movie article.")
 			continue
 
-		title = get_title(soup)
+		title = format_title(url_title)
 			
 		# Generate and upload a poster image
 		prompt = f"{title} Movie Poster"
@@ -53,7 +54,7 @@ def batch_translate_and_upload(batch_size, k=2):
 
 		# Generate a translation
 		sections_to_translate = {
-			"title": get_title(soup),
+			"title": title,
 			"plot": get_plot(soup),
 			"cast": get_cast(soup),
 			"infobox": utils.dict_to_newline_string(get_movie_infobox(soup))
@@ -62,7 +63,7 @@ def batch_translate_and_upload(batch_size, k=2):
 
 		# Add the original titles
 		result["metadata"].update({
-			"original_title": get_title(soup),
+			"original_title": title,
 			"url_title": url_title
 		})
 
@@ -222,3 +223,13 @@ def get_movie_infobox(soup):
 	]
 
 	return _get_infobox(soup, headers_to_extract)
+
+def format_title(url_title):
+	"""Format a displayable article title from a Wikipedia url title:
+	 * url decode
+	 * replace underscores
+	 * remove (film) suffix
+	"""
+	title = unquote(url_title)
+	title = re.sub("\(.*film\)", "", title)
+	return title.replace("_", " ").strip()

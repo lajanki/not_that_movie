@@ -26,7 +26,7 @@ def batch_translate_and_upload(batch_size, k=2):
 		logging.info("%s/%s", translate.BASE_URL, url_title)
 
 		soup = translate.make_soup(url_title)
-		title = translate.get_title(soup)
+		title = translate.format_title(url_title)
 
 		# Generate and upload a poster image
 		category = token.split(";")[0]
@@ -39,7 +39,7 @@ def batch_translate_and_upload(batch_size, k=2):
 
 		# Generate a translation
 		sections_to_translate = {
-			"title": translate.get_title(soup),
+			"title": title,
 			"description": get_description(soup),
 			"infobox": utils.dict_to_newline_string(get_person_infobox(soup))
 		}
@@ -48,7 +48,7 @@ def batch_translate_and_upload(batch_size, k=2):
 		result["img_prompt"] = prompt
 
 		result["metadata"].update({
-			"original_title": translate.get_title(soup),
+			"original_title": title,
 			"url_title": url_title
 		})
 

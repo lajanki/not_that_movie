@@ -98,3 +98,21 @@ def test_generated_schema(mock_translate):
         }
     })
     assert expected_schema.is_valid(translation)
+
+
+@pytest.mark.parametrize(
+    "url_title,expected",
+    [
+        ("The_Departed", "The Departed"),
+        ("Braveheart", "Braveheart"),
+        ("American_History_X", "American History X"),
+        ("Capernaum_(film)", "Capernaum"),
+        ("City_of_God_(2002_film)", "City of God"),
+        ("It%27s_a_Wonderful_Life", "It's a Wonderful Life"),
+        ("Hachi:_A_Dog%27s_Tale", "Hachi: A Dog's Tale"),
+        ("Kill_Bill:_Vol._1", "Kill Bill: Vol. 1"),
+        ("Howl%27s_Moving_Castle_(film)", "Howl's Moving Castle")
+    ])
+def test_title_formatting(url_title, expected):
+    """Test transformation from url encoded title to an article title."""
+    assert translate.format_title(url_title) == expected
