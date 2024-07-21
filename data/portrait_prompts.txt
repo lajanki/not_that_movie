@@ -67,8 +67,17 @@ director;A movie director next to a set of cameras
 director;A movie director looking into a film camera
 director;A movie director pointing off camera to a set of people
 director;A movie director discussing with other people on the movie set
-director;A movie director looking sitting in the director's chair
+director;A movie director sitting in the director's chair
+director;A movie director sitting in the director's chair looking at the camera over their shoulder 
 director;A movie director inspecting the set through a camera lens
 director;A movie director sitting in a comfortable seat in a movie theater
 director;A movie director proudly poiting to a marquee of a theater displaying their film
-
+director;A movie director speaking into a director's megaphone
+director;A movie director at an award gala next to a couple of actors from his movie
+director;A professional headshot of a movie director
+director;A headshot of a movie director with their hand resting on their cheek
+director;A movie director next to a miniature model of a scene about to be shot
+director;A movie director giving an interview wearing dark sunglasses
+director;A movie director with a pose seen through a clap board
+director;A promotional shot of a movie director standing in front of a poster of their movie
+director;A movie director holding a prop from a movie that made them famous
