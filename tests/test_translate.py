@@ -8,7 +8,7 @@ from pytest_schema import schema
 # Mock Google Cloud client creations before importing the main library
 with (
     patch("google.cloud.storage.Client"),
-    patch("google.cloud.secretmanager.SecretManagerServiceClient")
+    #patch("google.cloud.secretmanager.SecretManagerServiceClient")
 ):
     from src import translate
 
@@ -27,7 +27,8 @@ def test_get_title(mock_soup):
 
 def test_get_plot(mock_soup):
     """Test content parser for plot section."""
-    expected = ("The commercial space tug Nostromo is returning to Earth with a seven-member crew in stasis: "
+    expected = (
+        "The commercial space tug Nostromo is returning to Earth with a seven-member crew in stasis: "
         "Captain Dallas, Executive Officer Kane, Warrant Officer Ripley, Navigator Lambert, "
         "Science Officer Ash, and engineers Parker and Brett. Detecting a transmission from a nearby moon, "
         "the ship's computer, Mother, awakens the crew. Per company policy requiring any potential distress "
@@ -39,13 +40,15 @@ def test_get_plot(mock_soup):
         "\n\n"
         "Second paragraph."
         "\n\n"
-        "Third paragraph.")
+        "Third paragraph."
+    )
 
     assert translate.get_plot(mock_soup) == expected
 
 def test_get_cast(mock_soup):
     """Test content parser for cast section."""
-    expected = ("See also: List of Alien (film series) characters"
+    expected = (
+        "See also: List of Alien (film series) characters"
         "\n"
         "Tom Skerritt as Dallas, captain of the Nostromo. Skerritt had been approached early "
         "in the film's development, but declined as it did not yet have a director and had a very low budget. "
@@ -57,7 +60,8 @@ def test_get_cast(mock_soup):
         "She was the last actor to be cast for the film and performed most of her screen tests in-studio as the "
         "sets were being built.[12][13] The role of Ripley was Weaver's first leading role in a motion "
         "picture and earned her nominations for a Saturn Award for Best Actress and a BAFTA award for "
-        "Most Promising Newcomer to Leading Film Role.[14]")
+        "Most Promising Newcomer to Leading Film Role.[14]"
+    )
     
     assert translate.get_cast(mock_soup) == expected
 

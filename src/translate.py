@@ -207,19 +207,19 @@ def get_movie_infobox(soup):
 		a dict of parsed content
 	"""
 	headers_to_extract = [
+		"Based on",
+		"Box office",
+		"Budget",
+		"Countries",
 		"Directed by",
+		"Distributed by",
+		"Language",
 		"Production companies",
 		"Production company",
 		"Productioncompanies",
-		"Based on",
-		"Distributed by",
-		"Release dates",
 		"Release date",
+		"Release dates",
 		"Running time",
-		"Budget",
-		"Box office",
-		"Countries",
-		"Language"
 	]
 
 	return _get_infobox(soup, headers_to_extract)

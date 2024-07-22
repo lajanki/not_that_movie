@@ -62,7 +62,7 @@ def get_description(soup):
 	Return
 		string delimited by double newline
 	"""
-	paragraphs = [ tag.text for tag in  soup.select("body > section:first-child > p")]
+	paragraphs = [ tag.text for tag in  soup.select("body > section:first-child > p") ]
 
 	# The raw parsed text content likely includes various whitespace character
 	# form inline elements such as <a>.
@@ -80,25 +80,25 @@ def get_person_infobox(soup):
 		a dict of parsed content
 	"""
 	headers_to_extract = [
-		"Born",
-		"Died",
 		"Alma mater",
-		"Education",
-		"Nationality",
+		"Awards",
+		"Born",
+		"Children",
 		"Citizenship",
-		"Occupations",
+		"Died",
+		"Education",
+		"Known for",
+		"Nationality",
 		"Occupation",
-		"Years active",
-		"Political party",
-		"Spouse",
-		"Spouses",
+		"Occupations",
 		"Partner",
 		"Partners",
-		"Children",
-		"Works",
-		"Known for",
+		"Political party",
 		"Relatives",
-		"Awards"
+		"Spouse",
+		"Spouses",
+		"Works",
+		"Years active",
 	]
 
 	return translate._get_infobox(soup, headers_to_extract)
