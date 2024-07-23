@@ -67,8 +67,7 @@ def get_description(soup):
         for tag in soup.select("body > section:first-child > p")
     ]
 
-    content = "\n\n".join([p for p in paragraphs if p])
-    return content
+    return "\n\n".join([p for p in paragraphs if p])
 
 def get_person_infobox(soup):
 	"""Get selected metadata from the right side info table.

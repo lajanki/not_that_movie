@@ -141,21 +141,16 @@ def get_title(soup):
 	return soup.find("th", class_="infobox-above").text.strip()
 
 def get_plot(soup):
-	"""Get content from the Plot section.
+    """Get content from the Plot section.
 	Return
 		string delimited by double newline
 	"""
-	paragraphs = [ utils.cleanup_source_text(tag.text) for tag in soup.select("section > h2#Plot")[0].next_siblings ]
+    paragraphs = [
+        utils.cleanup_source_text(tag.text)
+        for tag in soup.select("section > h2#Plot")[0].next_siblings
+    ]
 
-	# The raw parsed text content likely includes various whitespace character
-	# form inline elements such as <a>.
-	# Cleanup each paragraph and merge to a single string
-	char_map = str.maketrans({
-		"\n": " ",
-		"\t": ""
-	})
-	content = "\n\n".join([ p for p in paragraphs if p ])
-	return content
+    return "\n\n".join([p for p in paragraphs if p])
 
 def get_cast(soup):
 	"""Get content from Cast section.
@@ -171,8 +166,7 @@ def get_cast(soup):
 		elif tag.name == "ul":
 			paragraphs.extend([item.text for item in tag.select("li")])
 
-	content = "\n".join([ utils.cleanup_source_text(p) for p in paragraphs if p ])
-	return content
+	return "\n".join([ utils.cleanup_source_text(p) for p in paragraphs if p ])
 
 def _get_infobox(soup, headers_to_extract):
 	"""Get selected metadata from the right hand side info table.
