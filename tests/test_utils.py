@@ -15,7 +15,8 @@ def test_format_as_html():
 
     formatted = {
         "plot": "<p>one</p><p>two</p><p>three</p><p>four.</p>",
-        "cast": "<ul><li>James as lion</li><li>John as submarine</li></ul>"
+        "cast": "<ul><li>James as lion</li><li>John as submarine</li></ul>",
+        "description": ""
     }
 
     assert utils.format_as_html(description) == formatted
