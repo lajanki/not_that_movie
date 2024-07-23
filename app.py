@@ -68,9 +68,7 @@ def fetch_movie_index():
 def fetch_person_description():
 	"""Fetch a random preson from the bucket."""
 	data = gcs_utils.download_random_content(constants.ContentType.PERSON)
-
-	# convert description to html
-	data["description"] = "".join([ f"<p>{p}</p>" for p in data["description"].split("\n\n") if p ])
+	data = utils.format_as_html(data)
 	return data, 200
 
 
