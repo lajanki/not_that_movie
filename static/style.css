@@ -116,10 +116,10 @@ div#cast > ul {
 }
 
 button#generate_button {
-	color: #acd4ff;
-	background-color: #233b58;
-	border-color: #233b58;
-	margin-top: 20px;
+	color: #ffbffa;
+	background-color: #887093;
+	border-color: #764595;
+	margin-right: 0.1em;
 }
 
 #description_divider {

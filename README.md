@@ -35,13 +35,18 @@ pytest
 The project can be run over localhost with Flask development server.
 First start the server with
 ```bash
-flask run
+flask run --debug
 ```
-Then, to generate a set of _2_ translations, send a request with
+Then, to generate a set of _2_ movie translations, send a request with
 ```bash
-curl -H "X-Appengine-Cron: 1" http://127.0.0.1:5000/_generate?batch_size=2
+curl -H "X-Appengine-Cron: 1" "http://127.0.0.1:5000/_generate?type=MOVIE&batch_size=2"
 ```
 Resulting plots are stored to the _dev_ bucket.
+
+Similarly, to generate translations for people:
+```bash
+curl -H "X-Appengine-Cron: 1" "http://127.0.0.1:5000/_generate?type=PERSON&batch_size=2"
+```
 
 ### Notes:
  * The Google Translate API is rate limited and each generation request results in multiple API calls. It is better to make several generation calls
