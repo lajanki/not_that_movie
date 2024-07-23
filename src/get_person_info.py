@@ -58,21 +58,17 @@ def batch_translate_and_upload(batch_size, k=2):
 		)
 
 def get_description(soup):
-	"""Get a short description for this person; the first paragraph in the article.
+    """Get a short description for this person; the first paragraph in the article.
 	Return
-		string delimited by double newline
+		string with paragraphs delimited by double newline
 	"""
-	paragraphs = [ tag.text for tag in  soup.select("body > section:first-child > p") ]
+    paragraphs = [
+        utils.cleanup_source_text(tag.text)
+        for tag in soup.select("body > section:first-child > p")
+    ]
 
-	# The raw parsed text content likely includes various whitespace character
-	# form inline elements such as <a>.
-	# Cleanup each paragraph and merge to a single string
-	char_map = str.maketrans({
-		"\n": " ",
-		"\t": ""
-	})
-	content = "\n\n".join([ p.translate(char_map) for p in paragraphs if p ])
-	return content
+    content = "\n\n".join([p for p in paragraphs if p])
+    return content
 
 def get_person_infobox(soup):
 	"""Get selected metadata from the right side info table.

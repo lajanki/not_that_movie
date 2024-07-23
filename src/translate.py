@@ -91,7 +91,7 @@ def generate_translation(sections_to_translate, k, target_language="en"):
 	for idx, section in enumerate(sections_to_translate):
 		logging.info("Translating %s (%d of %d)", section, idx+1, len(sections_to_translate))
 		# Remove citation tokens (ie. [1], [2] etc.)
-		text = utils.strip_ref_tokens(sections_to_translate[section])
+		text = sections_to_translate[section]
 		if len(text) > 5000:
 			logging.info("%s length=%d, truncating to 5000 characters", section, len(text))
 			text = text[:5000]
@@ -145,7 +145,7 @@ def get_plot(soup):
 	Return
 		string delimited by double newline
 	"""
-	paragraphs = [ tag.text.strip() for tag in soup.select("section > h2#Plot")[0].next_siblings ]
+	paragraphs = [ utils.cleanup_source_text(tag.text) for tag in soup.select("section > h2#Plot")[0].next_siblings ]
 
 	# The raw parsed text content likely includes various whitespace character
 	# form inline elements such as <a>.
@@ -154,7 +154,7 @@ def get_plot(soup):
 		"\n": " ",
 		"\t": ""
 	})
-	content = "\n\n".join([ p.translate(char_map) for p in paragraphs if p ])
+	content = "\n\n".join([ p for p in paragraphs if p ])
 	return content
 
 def get_cast(soup):
@@ -167,16 +167,11 @@ def get_cast(soup):
 	paragraphs = []
 	for tag in soup.select("#Cast, #Voice_cast, #Casting")[0].next_siblings:
 		if tag.name in ("div", "p"):
-			paragraphs.append(tag.text.strip())
+			paragraphs.append(tag.text)
 		elif tag.name == "ul":
 			paragraphs.extend([item.text for item in tag.select("li")])
 
-	char_map = str.maketrans({
-		"\n": " ",
-		"\t": ""
-	})
-
-	content = "\n".join([ p.translate(char_map) for p in paragraphs if p ])
+	content = "\n".join([ utils.cleanup_source_text(p) for p in paragraphs if p ])
 	return content
 
 def _get_infobox(soup, headers_to_extract):
@@ -194,7 +189,7 @@ def _get_infobox(soup, headers_to_extract):
 		if any([header in tag.text for header in headers_to_extract]):
 			try:
 				header = tag.find("th").text.strip("\n\t")
-				value = tag.find("td").text.strip("\n")
+				value = utils.cleanup_source_text(tag.find("td").text, replace_newlines=False)
 				metadata[header] = value
 			except AttributeError as e:
 				continue

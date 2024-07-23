@@ -5,11 +5,8 @@ from unittest.mock import patch, Mock
 from bs4 import BeautifulSoup
 from pytest_schema import schema
 
-# Mock Google Cloud client creations before importing the main library
-with (
-    patch("google.cloud.storage.Client"),
-    #patch("google.cloud.secretmanager.SecretManagerServiceClient")
-):
+# Mock Google Cloud client before importing the main library
+with patch("google.cloud.storage.Client"):
     from src import translate
 
 
@@ -52,15 +49,14 @@ def test_get_cast(mock_soup):
         "\n"
         "Tom Skerritt as Dallas, captain of the Nostromo. Skerritt had been approached early "
         "in the film's development, but declined as it did not yet have a director and had a very low budget. "
-        "Later, when Scott was attached as director and the budget had been doubled, Skerritt accepted "
-        "the role.[11][12]"
+        "Later, when Scott was attached as director and the budget had been doubled, Skerritt accepted the role."
         "\n"
         "Sigourney Weaver as Ripley, the warrant officer aboard the Nostromo. Weaver, who had "
         "Broadway experience but was relatively unknown in film, impressed Scott, Giler, and Hill with her audition. "
         "She was the last actor to be cast for the film and performed most of her screen tests in-studio as the "
-        "sets were being built.[12][13] The role of Ripley was Weaver's first leading role in a motion "
+        "sets were being built. The role of Ripley was Weaver's first leading role in a motion "
         "picture and earned her nominations for a Saturn Award for Best Actress and a BAFTA award for "
-        "Most Promising Newcomer to Leading Film Role.[14]"
+        "Most Promising Newcomer to Leading Film Role."
     )
     
     assert translate.get_cast(mock_soup) == expected
@@ -68,14 +64,14 @@ def test_get_cast(mock_soup):
 def test_get_infobox(mock_soup):
     """Test content parser for infobox."""
     expected = {
-        "Productioncompanies": "20th Century Fox\nBrandywine Productions[1][2]",
+        "Productioncompanies": "20th Century Fox\nBrandywine Productions",
         "Distributed by": "20th Century Fox",
         "Release dates": "May 25, 1979 (1979-05-25) (United States)\nSeptember 6,\n1979 (1979-09-06) (United Kingdom)",
-        "Running time": "116 minutes[3]",
-        "Countries": "United Kingdom\nUnited States[1][2]",
+        "Running time": "116 minutes",
+        "Countries": "United Kingdom\nUnited States",
         "Language": "English",
-        "Budget": "$11 million[lower-alpha 1][5]",
-        "Box office": "$184.7 million[5][6]"
+        "Budget": "$11 million",
+        "Box office": "$184.7 million"
     }
     assert translate.get_movie_infobox(mock_soup) == expected
 

@@ -64,6 +64,27 @@ def format_as_html(content):
 
 	return content
 
+def cleanup_source_text(text, replace_newlines=True):
+	"""Cleanup various whitespace and meta tokens from the parsed source
+	text left from inline html elements such as <a>
+	"""
+	replace_map = str.maketrans({
+		"\u200b": "", # zero-width space
+		"\xa0": "" # non-breaking space
+	})
+	text = text.translate(replace_map) 
+
+	if replace_newlines:
+		text = text.replace("\n", "")
+
+	# remove consecutive whitespace characters
+	text = re.sub("[ \\t]{2,}", " ", text)
+
+	# strip ref tokens
+	text = re.sub("(\[.*\])", "", text)
+	
+	return text.strip()
+
 def cleanup_translation(s):
 	"""Cleanup common erroneous characters introduced by translation:
 	 * extra whitespace in dollar amounts $ 300 => $300
