@@ -81,7 +81,7 @@ def cleanup_source_text(text, replace_newlines=True):
 	text = re.sub("[ \\t]{2,}", " ", text)
 
 	# strip ref tokens
-	text = re.sub("(\[.*\])", "", text)
+	text = re.sub("(\[.*?\])", "", text)
 	
 	return text.strip()
 
