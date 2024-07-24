@@ -94,6 +94,7 @@ def get_person_infobox(soup):
 		"Spouses",
 		"Works",
 		"Years active",
+		"Yearsactive",
 	]
 
 	return translate._get_infobox(soup, headers_to_extract)

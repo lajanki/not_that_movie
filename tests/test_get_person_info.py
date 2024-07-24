@@ -1,4 +1,3 @@
-
 import os
 import pytest
 from unittest.mock import patch, Mock
@@ -15,7 +14,7 @@ def mock_soup():
     """Create a soup object from the local source html."""
     source_html = os.path.join(os.path.dirname(__file__), "mocks", "Mike Myers.html")
     with open(source_html) as f:
-          return BeautifulSoup(f.read(), "html.parser")
+        return BeautifulSoup(f.read(), "html.parser")
 
 
 def test_get_description(mock_soup):
@@ -47,6 +46,7 @@ def test_get_person_infobox(mock_soup):
         "Born": "Michael John Myers\n (1963-05-25) May 25, 1963\n (age61)\nToronto, Ontario, Canada",
         "Citizenship": "Canada\nUnited Kingdom\nUnited States",
         "Occupations": "Actor\ncomedian\nfilmmaker\nsinger\nmusician\nproducer",
+        "Yearsactive": "1973–present",
         "Spouses": "Robin\n Ruzan\n \n\n(m.1993; div.2006)\n\n\n\n\n\n\n\nKelly Tisdale \n(m.2010)",
         "Children": "3",
         "Relatives": "Paul Myers (brother)"

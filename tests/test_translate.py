@@ -65,6 +65,7 @@ def test_get_infobox(mock_soup):
     """Test content parser for infobox."""
     expected = {
         "Productioncompanies": "20th Century Fox\nBrandywine Productions",
+        "Directed by": "Ridley\n Scott",
         "Distributed by": "20th Century Fox",
         "Release dates": "May 25, 1979 (1979-05-25) (United States)\nSeptember 6,\n1979 (1979-09-06) (United Kingdom)",
         "Running time": "116 minutes",

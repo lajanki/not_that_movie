@@ -180,9 +180,9 @@ def _get_infobox(soup, headers_to_extract):
 	# and try to parse its content
 	metadata = {}
 	for tag in soup.select("table.infobox > tbody > tr"):
-		if any([header in tag.text for header in headers_to_extract]):
+		if any([header in utils.cleanup_source_text(tag.text) for header in headers_to_extract]):
 			try:
-				header = tag.find("th").text.strip("\n\t")
+				header = utils.cleanup_source_text(tag.find("th").text)
 				value = utils.cleanup_source_text(tag.find("td").text, replace_newlines=False)
 				metadata[header] = value
 			except AttributeError as e:
