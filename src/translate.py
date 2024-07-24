@@ -166,6 +166,15 @@ def get_cast(soup):
 		elif tag.name == "ul":
 			paragraphs.extend([item.text for item in tag.select("li")])
 
+	# Drop the first paragprah if it mathces a link to a further article
+	section_prefixes = [
+		"main article",
+		"see also",
+		"further information"
+	]
+	if paragraphs and any([pre in paragraphs[0].lower() for pre in section_prefixes]):
+		paragraphs = paragraphs[1:]
+
 	return "\n".join([ utils.cleanup_source_text(p) for p in paragraphs if p ])
 
 def _get_infobox(soup, headers_to_extract):

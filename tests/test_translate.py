@@ -45,8 +45,6 @@ def test_get_plot(mock_soup):
 def test_get_cast(mock_soup):
     """Test content parser for cast section."""
     expected = (
-        "See also: List of Alien (film series) characters"
-        "\n"
         "Tom Skerritt as Dallas, captain of the Nostromo. Skerritt had been approached early "
         "in the film's development, but declined as it did not yet have a director and had a very low budget. "
         "Later, when Scott was attached as director and the budget had been doubled, Skerritt accepted the role."
