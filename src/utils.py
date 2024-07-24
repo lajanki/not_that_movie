@@ -7,9 +7,6 @@ from collections import Counter
 from google.cloud import secretmanager
 
 
-def strip_ref_tokens(text):
-	"""Strip reference tokens from source text, such as [1]."""
-	return re.sub("(\[.*\])", "", text)
 
 def dict_to_newline_string(dict_):
 	"""Convert a dictionary to a key: value string for translatation
