@@ -26,7 +26,7 @@ def batch_translate_and_upload(batch_size, k=2):
 		logging.info("%s/%s", translate.BASE_URL, url_title)
 
 		soup = translate.make_soup(url_title)
-		title = translate.get_title(soup)
+		title = translate.format_title(url_title)
 
 		# Generate and upload a poster image
 		category = token.split(";")[0]
@@ -39,7 +39,7 @@ def batch_translate_and_upload(batch_size, k=2):
 
 		# Generate a translation
 		sections_to_translate = {
-			"title": translate.get_title(soup),
+			"title": title,
 			"description": get_description(soup),
 			"infobox": utils.dict_to_newline_string(get_person_infobox(soup))
 		}
@@ -48,7 +48,7 @@ def batch_translate_and_upload(batch_size, k=2):
 		result["img_prompt"] = prompt
 
 		result["metadata"].update({
-			"original_title": translate.get_title(soup),
+			"original_title": title,
 			"url_title": url_title
 		})
 
@@ -58,21 +58,16 @@ def batch_translate_and_upload(batch_size, k=2):
 		)
 
 def get_description(soup):
-	"""Get a short description for this person; the first paragraph in the article.
+    """Get a short description for this person; the first paragraph in the article.
 	Return
-		string delimited by double newline
+		string with paragraphs delimited by double newline
 	"""
-	paragraphs = [ tag.text for tag in  soup.select("body > section:first-child > p")]
+    paragraphs = [
+        utils.cleanup_source_text(tag.text)
+        for tag in soup.select("body > section:first-child > p")
+    ]
 
-	# The raw parsed text content likely includes various whitespace character
-	# form inline elements such as <a>.
-	# Cleanup each paragraph and merge to a single string
-	char_map = str.maketrans({
-		"\n": " ",
-		"\t": ""
-	})
-	content = "\n\n".join([ p.translate(char_map) for p in paragraphs if p ])
-	return content
+    return "\n\n".join([p for p in paragraphs if p])
 
 def get_person_infobox(soup):
 	"""Get selected metadata from the right side info table.
@@ -80,25 +75,26 @@ def get_person_infobox(soup):
 		a dict of parsed content
 	"""
 	headers_to_extract = [
-		"Born",
-		"Died",
 		"Alma mater",
-		"Education",
-		"Nationality",
+		"Awards",
+		"Born",
+		"Children",
 		"Citizenship",
-		"Occupations",
+		"Died",
+		"Education",
+		"Known for",
+		"Nationality",
 		"Occupation",
-		"Years active",
-		"Political party",
-		"Spouse",
-		"Spouses",
+		"Occupations",
 		"Partner",
 		"Partners",
-		"Children",
-		"Works",
-		"Known for",
+		"Political party",
 		"Relatives",
-		"Awards"
+		"Spouse",
+		"Spouses",
+		"Works",
+		"Years active",
+		"Yearsactive",
 	]
 
 	return translate._get_infobox(soup, headers_to_extract)

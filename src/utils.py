@@ -7,9 +7,6 @@ from collections import Counter
 from google.cloud import secretmanager
 
 
-def strip_ref_tokens(text):
-	"""Strip reference tokens from source text, such as [1]."""
-	return re.sub("(\[.*\])", "", text)
 
 def dict_to_newline_string(dict_):
 	"""Convert a dictionary to a key: value string for translatation
@@ -47,19 +44,43 @@ def newline_string_to_dict(text):
 	return data
 
 def format_as_html(content):
-	"""Convert the plot and cast sections of a stored
-	movie file to html.
-	"""
-	plot = "".join([ f"<p>{p}</p>" for p in content["plot"].split("\n\n") if p ])
-	cast_items = [ f"<li>{p}</li>" for p in content["cast"].split("\n") if p ]
+	"""Convert various sections parsed from an article as html."""
+	# plot and cast for a movie article
+	plot = "".join([ f"<p>{p}</p>" for p in content.get("plot", "").split("\n\n") if p ])
+	cast_items = [ f"<li>{p}</li>" for p in content.get("cast", "").split("\n") if p ]
 	cast = "<ul>" + "".join(cast_items) + "</ul>"
+
+	# description for a person article
+	description = "".join([ f"<p>{p}</p>" for p in content.get("description", "").split("\n\n") if p ])
 
 	content.update({
 		"plot": plot,
-		"cast": cast
+		"cast": cast,
+		"description": description
 	})
 
 	return content
+
+def cleanup_source_text(text, replace_newlines=True):
+	"""Cleanup various whitespace and meta tokens from the parsed source
+	text left from inline html elements such as <a>
+	"""
+	replace_map = str.maketrans({
+		"\u200b": "", # zero-width space
+		"\xa0": "" # non-breaking space
+	})
+	text = text.translate(replace_map) 
+
+	if replace_newlines:
+		text = text.replace("\n", "")
+
+	# remove consecutive whitespace characters
+	text = re.sub("[ \\t]{2,}", " ", text)
+
+	# strip ref tokens
+	text = re.sub("(\[.*?\])", "", text)
+	
+	return text.strip()
 
 def cleanup_translation(s):
 	"""Cleanup common erroneous characters introduced by translation:

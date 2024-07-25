@@ -1,19 +1,20 @@
 import json
 import logging
 import random
+import re
 import requests
-from urllib.parse import quote
 from datetime import date
+from urllib.parse import quote, unquote
 
 from bs4 import BeautifulSoup
-import httpx
 from googletrans import Translator, LANGUAGES
+import httpx
 
 from src import (
-	utils,
-	gcs_utils,
 	create_image,
-	ENV
+	ENV,
+	gcs_utils,
+	utils,
 )
 
 
@@ -38,10 +39,10 @@ def batch_translate_and_upload(batch_size, k=2):
 
 		soup = make_soup(url_title)
 		if not soup.select("#Plot"):
-			logging.error(f"https://en.wikipedia.org/wiki/{quote(title)} doesn't apper to be a valid movie article.")
+			logging.error(f"https://en.wikipedia.org/wiki/{url_title} doesn't apper to be a valid movie article.")
 			continue
 
-		title = get_title(soup)
+		title = format_title(url_title)
 			
 		# Generate and upload a poster image
 		prompt = f"{title} Movie Poster"
@@ -53,7 +54,7 @@ def batch_translate_and_upload(batch_size, k=2):
 
 		# Generate a translation
 		sections_to_translate = {
-			"title": get_title(soup),
+			"title": title,
 			"plot": get_plot(soup),
 			"cast": get_cast(soup),
 			"infobox": utils.dict_to_newline_string(get_movie_infobox(soup))
@@ -62,7 +63,7 @@ def batch_translate_and_upload(batch_size, k=2):
 
 		# Add the original titles
 		result["metadata"].update({
-			"original_title": get_title(soup),
+			"original_title": title,
 			"url_title": url_title
 		})
 
@@ -90,7 +91,7 @@ def generate_translation(sections_to_translate, k, target_language="en"):
 	for idx, section in enumerate(sections_to_translate):
 		logging.info("Translating %s (%d of %d)", section, idx+1, len(sections_to_translate))
 		# Remove citation tokens (ie. [1], [2] etc.)
-		text = utils.strip_ref_tokens(sections_to_translate[section])
+		text = sections_to_translate[section]
 		if len(text) > 5000:
 			logging.info("%s length=%d, truncating to 5000 characters", section, len(text))
 			text = text[:5000]
@@ -140,21 +141,16 @@ def get_title(soup):
 	return soup.find("th", class_="infobox-above").text.strip()
 
 def get_plot(soup):
-	"""Get content from the Plot section.
+    """Get content from the Plot section.
 	Return
 		string delimited by double newline
 	"""
-	paragraphs = [ tag.text.strip() for tag in soup.select("section > h2#Plot")[0].next_siblings ]
+    paragraphs = [
+        utils.cleanup_source_text(tag.text)
+        for tag in soup.select("section > h2#Plot")[0].next_siblings
+    ]
 
-	# The raw parsed text content likely includes various whitespace character
-	# form inline elements such as <a>.
-	# Cleanup each paragraph and merge to a single string
-	char_map = str.maketrans({
-		"\n": " ",
-		"\t": ""
-	})
-	content = "\n\n".join([ p.translate(char_map) for p in paragraphs if p ])
-	return content
+    return "\n\n".join([p for p in paragraphs if p])
 
 def get_cast(soup):
 	"""Get content from Cast section.
@@ -166,17 +162,20 @@ def get_cast(soup):
 	paragraphs = []
 	for tag in soup.select("#Cast, #Voice_cast, #Casting")[0].next_siblings:
 		if tag.name in ("div", "p"):
-			paragraphs.append(tag.text.strip())
+			paragraphs.append(tag.text)
 		elif tag.name == "ul":
 			paragraphs.extend([item.text for item in tag.select("li")])
 
-	char_map = str.maketrans({
-		"\n": " ",
-		"\t": ""
-	})
+	# Drop the first paragprah if it mathces a link to a further article
+	section_prefixes = [
+		"main article",
+		"see also",
+		"further information"
+	]
+	if paragraphs and any([pre in paragraphs[0].lower() for pre in section_prefixes]):
+		paragraphs = paragraphs[1:]
 
-	content = "\n".join([ p.translate(char_map) for p in paragraphs if p ])
-	return content
+	return "\n".join([ utils.cleanup_source_text(p) for p in paragraphs if p ])
 
 def _get_infobox(soup, headers_to_extract):
 	"""Get selected metadata from the right hand side info table.
@@ -190,10 +189,10 @@ def _get_infobox(soup, headers_to_extract):
 	# and try to parse its content
 	metadata = {}
 	for tag in soup.select("table.infobox > tbody > tr"):
-		if any([header in tag.text for header in headers_to_extract]):
+		if any([header in utils.cleanup_source_text(tag.text) for header in headers_to_extract]):
 			try:
-				header = tag.find("th").text.strip("\n\t")
-				value = tag.find("td").text.strip("\n")
+				header = utils.cleanup_source_text(tag.find("th").text)
+				value = utils.cleanup_source_text(tag.find("td").text, replace_newlines=False)
 				metadata[header] = value
 			except AttributeError as e:
 				continue
@@ -206,19 +205,29 @@ def get_movie_infobox(soup):
 		a dict of parsed content
 	"""
 	headers_to_extract = [
+		"Based on",
+		"Box office",
+		"Budget",
+		"Countries",
 		"Directed by",
+		"Distributed by",
+		"Language",
 		"Production companies",
 		"Production company",
 		"Productioncompanies",
-		"Based on",
-		"Distributed by",
-		"Release dates",
 		"Release date",
+		"Release dates",
 		"Running time",
-		"Budget",
-		"Box office",
-		"Countries",
-		"Language"
 	]
 
 	return _get_infobox(soup, headers_to_extract)
+
+def format_title(url_title):
+	"""Format a displayable article title from a Wikipedia url title:
+	 * url decode
+	 * replace underscores
+	 * remove (film) suffix
+	"""
+	title = unquote(url_title)
+	title = re.sub("\(.*film\)", "", title)
+	return title.replace("_", " ").strip()

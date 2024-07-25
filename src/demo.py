@@ -16,7 +16,7 @@ from src import (
 def print_movie(title, k):
 	soup = translate.make_soup(title)
 	sections_to_translate = {
-		"title": translate.get_title(soup),
+		"title": translate.format_title(title),
 		"plot": translate.get_plot(soup),
 		"cast": translate.get_cast(soup),
 		"infobox": utils.dict_to_newline_string(translate.get_movie_infobox(soup))
@@ -27,7 +27,7 @@ def print_movie(title, k):
 def print_person(title, k):
 	soup = translate.make_soup(title)
 	sections_to_translate = {
-		"title": translate.get_title(soup),
+		"title": translate.format_title(title),
 		"description": get_person_info.get_description(soup),
 		"infobox": utils.dict_to_newline_string(get_person_info.get_person_infobox(soup))
 	}
