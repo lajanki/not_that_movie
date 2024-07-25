@@ -95,7 +95,7 @@ def cleanup_translation(s):
 def get_openai_secret():
 	"""Fetch OpenAI API key from Secret Manager."""
 	client = secretmanager.SecretManagerServiceClient()
-	response = client.access_secret_version(name="projects/webhost-common/secrets/openai_api_key/versions/1")
+	response = client.access_secret_version(name="projects/webhost-common/secrets/not-that-movie-open-ai-api-key/versions/1")
 	return response.payload.data.decode()
 
 def select_weighted_list_of_movie_names(batch_size):
