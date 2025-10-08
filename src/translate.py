@@ -127,7 +127,10 @@ def make_soup(title):
 	Return:
 		The parsed content of the page as BeautifulSoup object
 	"""
-	r = requests.get(f"{BASE_URL}/{title}")
+	headers = {
+		"User-Agent": "NotThatMovieBot/1.0 (https://not-that-movie.net rrt-info-1.20205@protonmail.com)"
+	}
+	r = requests.get(f"{BASE_URL}/{title}", headers=headers)
 	r.raise_for_status()
 	soup = BeautifulSoup(r.text, "html.parser")
 
