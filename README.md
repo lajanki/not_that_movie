@@ -23,9 +23,6 @@ Additionally, a poster image is generated via OpenAI's [DALL-E](https://openai.c
 
 ![User flow](./user_flow.png)
 
-### Cloud Storage setup
-The script `setup_gcs.sh` can be used to setup a **public** Cloud Storage bucket for storing generated plots.
-It also adds a 30 day expiration lifecycle rule to allow slowly renewing generated files.
 
 ### Running locally
 The project can be run over localhost with Flask development server.
