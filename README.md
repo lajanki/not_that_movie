@@ -11,13 +11,15 @@ A Python Flask webapp for poorly translated movie plots. Deployed to Google App 
 >
 > _Pirates: The Caribbean_
 
+The project is managed with [uv](https://docs.astral.sh/uv/).
+
 
 ### Data flow
 Movie plots are pregenerated at regular intervals by translating existing plots from Wikipedia via 1-2
 intermediary languages back to English using Google Translate. Generated plots are stored to a public Cloud Storage bucket
 to be read by the frontend.
 
-Additioanlly, a poster image is generated via OpenAI's [DALL-E](https://openai.com/dall-e-2) model.
+Additionally, a poster image is generated via OpenAI's [DALL-E](https://openai.com/dall-e-2) model.
 
 ![User flow](./user_flow.png)
 
@@ -25,17 +27,12 @@ Additioanlly, a poster image is generated via OpenAI's [DALL-E](https://openai.c
 The script `setup_gcs.sh` can be used to setup a **public** Cloud Storage bucket for storing generated plots.
 It also adds a 30 day expiration lifecycle rule to allow slowly renewing generated files.
 
-### Unit tests
-Unit tests for the Python backend can be run with
-```bash
-pytest
-```
-
 ### Running locally
 The project can be run over localhost with Flask development server.
-First start the server with
+
+With `uv` installed, first start the server with
 ```bash
-flask run --debug
+uv run flask --app app.views:app run --debug
 ```
 Then, to generate a set of _2_ movie translations, send a request with
 ```bash
@@ -48,15 +45,22 @@ Similarly, to generate translations for people:
 curl -H "X-Appengine-Cron: 1" "http://127.0.0.1:5000/_generate?type=PERSON&batch_size=2"
 ```
 
-### Notes:
- * The Google Translate API is rate limited and each generation request results in multiple API calls. It is better to make several generation calls
-with moderate `batch_size` over a timeframe than to use a large batch size.
- * This will not generate an image in order to save DALL-E API tokens. Instead a template poster image will be used. 
+> [!NOTE]  
+> The Google Translate API is rate limited. Each generation request includes multiple sections to translate. Therefore, is better to make several generation calls with moderate `batch_size` over a timeframe than to use a large batch size.
+
+> [!NOTE]  
+> When ran locally, the poster image generation is skipped in order to save DALL-E API tokens. A template image will be used instead. 
+
+### Unit tests
+Unit tests for the Python backend can be run with
+```bash
+uv run pytest
+```
 
 ### Caveats
-* The project uses a free library for Google Translate: [googletrans](https://github.com/ssut/py-googletrans). It is not an
-official Google product and not guaranteed to be stable.
-* Similarly, Wikipedia movie plot content is web scraped using the page content endpoint of the API [https://en.wikipedia.org/api/rest_v1/](https://en.wikipedia.org/api/rest_v1/).
+The project uses a third party Google Translate library: [googletrans](https://github.com/ssut/py-googletrans). It is not an official Google product and is not guaranteed to be stable. Translations calls may fail with indirect error messages, this is likely related to API rate limits.
+
+Similarly, Wikipedia movie plot content is web scraped using the page content endpoint of the API [https://en.wikipedia.org/api/rest_v1/](https://en.wikipedia.org/api/rest_v1/).
 This relies on certain html elements like `section > h2#Plot` being available on the page and as such may break on major changes on Wikipedia's underlying page template. 
 
 ### Adding new source movies
@@ -73,5 +77,4 @@ the rotation.
 Movie names need to be in the format they are in the url of the corresponding Wikipedia article, ie. for the 1991 Disney _Beauty and the Beast_ use `Beauty_and_the_Beast_(1991_film)` as in https://en.wikipedia.org/wiki/Beauty_and_the_Beast_(1991_film)
 
 ### Deploy to App Engine
-A GitHub Actions workflow deploys the project to App Engine on push to the main branch. Only the web service component is deployed. Scheduling should
-be deployed manually as App Engine does not support updating scheduling only for a single service.
+A GitHub Actions workflow deploys the project to App Engine on push to the main branch. Only the web service component is deployed. Scheduling for the content parsing endpoints is not included in this repository as App Engine does not support managing service specific schedules.

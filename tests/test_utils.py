@@ -1,6 +1,6 @@
 import pytest
 
-from src import (
+from app import (
 	utils
 )
 

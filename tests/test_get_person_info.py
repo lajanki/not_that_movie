@@ -6,7 +6,7 @@ from bs4 import BeautifulSoup
 from pytest_schema import schema
 
 with patch("google.cloud.storage.Client"):
-    from src import get_person_info
+    from app import get_person_info
 
 
 @pytest.fixture

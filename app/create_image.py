@@ -3,7 +3,7 @@ import logging
 
 import openai
 
-from src import utils
+from app import utils
 
 
 def create_image(prompt):

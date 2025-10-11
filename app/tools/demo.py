@@ -1,12 +1,9 @@
-# Runnable script for generating sample translations for demonstration purposes.
-#
-# Run from the root folder with
-# 	python -m src.demo <title>
+# Helper functions for printing sample translations.
+# run through cli.py.
 
-import argparse
 import json
 
-from src import (
+from app import (
 	utils,
 	translate,
 	get_person_info
@@ -33,18 +30,3 @@ def print_person(title, k):
 	}
 	res = translate.generate_translation(sections_to_translate, k)
 	print(json.dumps(res, indent=2))
-
-
-if __name__ == "__main__":
-	parser = argparse.ArgumentParser(description="Chain translate Wikpedia movie plots")
-	parser.add_argument("title", help="Wikipedia article url title")
-	parser.add_argument("--person", help="Extract person information instead of movie", action="store_true")
-	parser.add_argument("--k", help="Number of intermediary languages", type=int, default=2)
-	parser.add_argument("--target_language", help="Target language for final translation", default="en")
-	args = parser.parse_args()
-
-	if args.person:
-		print_person(args.title, args.k)
-	else:
-		print_movie(args.title, args.k)
-

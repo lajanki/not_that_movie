@@ -7,7 +7,7 @@ from pytest_schema import schema
 
 # Mock Google Cloud client before importing the main library
 with patch("google.cloud.storage.Client"):
-    from src import translate
+    from app import translate
 
 
 @pytest.fixture
@@ -75,7 +75,7 @@ def test_get_infobox(mock_soup):
     assert translate.get_movie_infobox(mock_soup) == expected
 
 
-@patch("src.translate.translator")
+@patch("app.translate.translator")
 def test_generated_schema(mock_translate):
     """Validate high level schema of the translated description."""
     mock_translate.translate.return_value = Mock(text="")

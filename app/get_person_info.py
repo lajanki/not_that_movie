@@ -3,7 +3,7 @@ import logging
 import random
 from datetime import date
 
-from src import (
+from app import (
 	utils,
 	gcs_utils,
 	create_image,

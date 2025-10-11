@@ -1,4 +1,3 @@
-import argparse
 from flask import (
 	Flask,
 	render_template,
@@ -6,7 +5,7 @@ from flask import (
 	abort
 )
 
-from src import (
+from app import (
 	translate,
 	get_person_info,
 	gcs_utils,
@@ -16,6 +15,7 @@ from src import (
 
 
 app = Flask(__name__)
+
 
 @app.route("/")
 def index():
@@ -70,10 +70,3 @@ def fetch_person_description():
 	data = gcs_utils.download_random_content(constants.ContentType.PERSON)
 	data = utils.format_as_html(data)
 	return data, 200
-
-
-if __name__ == "__main__":
-	parser = argparse.ArgumentParser()
-	args = parser.parse_args()
-
-	app.run()

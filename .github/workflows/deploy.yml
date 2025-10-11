@@ -11,19 +11,36 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: Set up Python 3.10
+    - name: Set up Python
       uses: actions/setup-python@v5
       with:
-        python-version: "3.10"
+        python-version-file: ".python-version"
 
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
+    - name: Install uv
+      uses: astral-sh/setup-uv@v7
+      with:
+          version: "0.9.2"
 
-    - name: Test with pytest
+    - name: Install the project
       run: |
-        pytest
+        uv sync --no-dev
+
+    - name: Run unit tests
+      run: |
+        uv run pytest
+
+
+    # Export a legacy requirements file for App Engine
+    - name: Export requirements.txt
+      run: |
+        uv export > requirements.txt
+
+    - name: Upload requirements.txt
+      uses: actions/upload-artifact@v4
+      with:
+        name: requirements_exports
+        path: requirements.txt
+
 
   deploy:
     runs-on: ubuntu-latest
@@ -38,17 +55,21 @@ jobs:
 
       - id: auth
         name: Authenticate to Google Cloud
-        uses: google-github-actions/auth@v2
+        uses: google-github-actions/auth@v3
         with:
           project_id: webhost-common
           workload_identity_provider: projects/232474345248/locations/global/workloadIdentityPools/github-actions-deploy/providers/github
           service_account: ci-deploy@webhost-common.iam.gserviceaccount.com
 
       - name: Set up Cloud SDK
-        uses: google-github-actions/setup-gcloud@v2
+        uses: google-github-actions/setup-gcloud@v3
         with:
           project_id: webhost-common
 
-      # Deploy the service. Note: this does **not** deploy the scheduling
+      - name: Download requirements.txt
+        uses: actions/download-artifact@v4
+        with:
+          name: requirements_exports
+
       - name: Deploy to App Engine
         run: gcloud app deploy
