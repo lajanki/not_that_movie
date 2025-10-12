@@ -1,0 +1,20 @@
+[project]
+name = "not_that_movie"
+version = "1.0.0"
+description = "Movie alternative recommender app"
+requires-python = ">=3.11"
+dependencies = [
+    "beautifulsoup4",
+    "flask",
+    "google-cloud-secret-manager",
+    "google-cloud-storage>=2.10.0",
+    "googletrans==4.0.0-rc1",
+    "gunicorn",
+    "httpx",
+    "openai",
+]
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "pytest-schema",
+]

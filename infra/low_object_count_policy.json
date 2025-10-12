@@ -1,0 +1,38 @@
+{
+  "displayName": "prod_not_that_movie bucket low object count",
+  "documentation": {
+    "subject": "prod_not_that_movie bucket low object count"
+  },
+  "userLabels": {},
+  "conditions": [
+    {
+      "displayName": "GCS Bucket - Object count",
+      "conditionThreshold": {
+        "aggregations": [
+          {
+            "alignmentPeriod": "3600s",
+            "perSeriesAligner": "ALIGN_MAX"
+          }
+        ],
+        "comparison": "COMPARISON_LT",
+        "duration": "0s",
+        "filter": "resource.type = \"gcs_bucket\" AND resource.labels.bucket_name = \"prod_not_that_movie\" AND metric.type = \"storage.googleapis.com/storage/object_count\"",
+        "thresholdValue": 150,
+        "trigger": {
+          "count": 1
+        }
+      }
+    }
+  ],
+  "alertStrategy": {
+    "autoClose": "604800s",
+    "notificationPrompts": [
+      "OPENED"
+    ]
+  },
+  "combiner": "OR",
+  "enabled": true,
+  "notificationChannels": [
+    "projects/webhost-common/notificationChannels/13907945951214948259"
+  ]
+}

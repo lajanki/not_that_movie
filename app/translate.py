@@ -10,15 +10,13 @@ from bs4 import BeautifulSoup
 from googletrans import Translator, LANGUAGES
 import httpx
 
-from src import (
+from app import (
 	create_image,
 	ENV,
 	gcs_utils,
 	utils,
 )
 
-
-logging.basicConfig(level=logging.INFO)
 
 timeout = httpx.Timeout(10)
 translator = Translator(timeout=timeout)

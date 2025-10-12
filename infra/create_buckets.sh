@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Setup Cloud Storage buckets with lifecycle rules
+set -e
 
 ENV=${ENV:-dev}
 

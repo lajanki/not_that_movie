@@ -8,4 +8,4 @@ env_variables:
 
 service_account: not-that-movie-worker@webhost-common.iam.gserviceaccount.com
 
-entrypoint: gunicorn -b :$PORT --timeout 60 app:app
+entrypoint: gunicorn -b :$PORT --timeout 60 app.views:app
