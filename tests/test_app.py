@@ -18,6 +18,15 @@ def client(app):
     return app.test_client()
 
 
+def test_index_request(client):
+    """Request to the root should render the index page."""
+    with patch("app.views.render_template") as mock_render:
+        mock_render.return_value = "patched-render"
+        response = client.get("/")
+        mock_render.assert_called_once_with("index.html")
+        assert response.status_code == 200
+        assert b"patched-render" in response.data
+
 def test_person_generation_request(client):
     """Test content generation request for people."""
     with patch("app.get_person_info.batch_translate_and_upload") as mock_batch_translate_and_upload:
