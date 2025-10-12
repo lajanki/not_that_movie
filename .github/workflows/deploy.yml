@@ -23,7 +23,7 @@ jobs:
 
     - name: Install the project
       run: |
-        uv sync --no-dev
+        uv sync
 
     - name: Run unit tests
       run: |
