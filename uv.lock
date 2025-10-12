@@ -949,7 +949,7 @@ dependencies = [
     { name = "openai" },
 ]
 
-[package.optional-dependencies]
+[package.dev-dependencies]
 dev = [
     { name = "pytest" },
     { name = "pytest-schema" },
@@ -965,10 +965,13 @@ requires-dist = [
     { name = "gunicorn" },
     { name = "httpx" },
     { name = "openai" },
-    { name = "pytest", marker = "extra == 'dev'" },
-    { name = "pytest-schema", marker = "extra == 'dev'" },
 ]
-provides-extras = ["dev"]
+
+[package.metadata.requires-dev]
+dev = [
+    { name = "pytest" },
+    { name = "pytest-schema" },
+]
 
 [[package]]
 name = "openai"

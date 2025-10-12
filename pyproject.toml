@@ -13,8 +13,9 @@ dependencies = [
     "httpx",
     "openai",
 ]
-[project.optional-dependencies]
+
+[dependency-groups]
 dev = [
-    "pytest",
-    "pytest-schema",
+  "pytest",
+  "pytest-schema",
 ]
