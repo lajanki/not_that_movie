@@ -9,6 +9,7 @@ from app import (
 	create_image,
 	translate,
 	ENV,
+	BASE,
 )
 
 
@@ -101,7 +102,7 @@ def get_person_infobox(soup):
 
 def get_people_list():
     """Get a list of people from people.txt."""
-    with open("data/people.txt") as f:
+    with open(BASE / "data" / "people.txt") as f:
         people = [
             row.strip()
             for row in f.readlines()
@@ -115,7 +116,7 @@ def get_person_portrait_prompt(category):
     Args:
         category (str): the category of prompts to choose from: actor|director
     """
-    with open("data/portrait_prompts.txt") as f:
+    with open(BASE / "data" / "portrait_prompts.txt") as f:
         prompts = [
             row.split(";")[1].strip()
             for row in f.readlines()

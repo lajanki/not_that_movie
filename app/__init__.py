@@ -1,7 +1,10 @@
 import os
 import logging
+from pathlib import Path
+
 
 ENV = os.getenv("ENV", "dev")
+BASE = Path(__file__).parent
 
 # Configure logging before any other imports
 logging.basicConfig(

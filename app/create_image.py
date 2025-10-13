@@ -3,7 +3,7 @@ import logging
 
 import openai
 
-from app import utils
+from app import utils, BASE
 
 
 def create_image(prompt):
@@ -23,7 +23,7 @@ def create_image(prompt):
 def create_test_image(*args):
 	"""Get test image content."""
 	logging.info("Using default poster image")
-	with open("./static/default_poster.png", "rb") as f:
+	with open(BASE / "static" / "default_poster.png", "rb") as f:
 		return f.read()
 
 create_image_by_env = {

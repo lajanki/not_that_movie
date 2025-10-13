@@ -1,12 +1,13 @@
 import os
 import pytest
-from unittest.mock import patch, Mock
+from unittest.mock import patch, Mock, mock_open
 
 from bs4 import BeautifulSoup
 from pytest_schema import schema
 
 with patch("google.cloud.storage.Client"):
-    from app import get_person_info
+    from app import get_person_info, BASE
+
 
 
 @pytest.fixture
@@ -53,3 +54,11 @@ def test_get_person_infobox(mock_soup):
     }
     
     assert get_person_info.get_person_infobox(mock_soup) == expected
+
+def test_get_people_list():
+    """Test reading the people list from file."""
+    # This mainly tests that the correct path is used
+    with patch("builtins.open", mock_open()) as mock_file:
+        get_person_info.get_people_list()
+
+    mock_file.assert_called_with(BASE / "data/people.txt")
