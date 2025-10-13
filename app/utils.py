@@ -6,6 +6,7 @@ import re
 from collections import Counter
 from google.cloud import secretmanager
 
+from app import BASE
 
 
 def dict_to_newline_string(dict_):
@@ -95,7 +96,9 @@ def cleanup_translation(s):
 def get_openai_secret():
 	"""Fetch OpenAI API key from Secret Manager."""
 	client = secretmanager.SecretManagerServiceClient()
-	response = client.access_secret_version(name="projects/webhost-common/secrets/not-that-movie-open-ai-api-key/versions/1")
+	response = client.access_secret_version(
+		name="projects/webhost-common/secrets/not-that-movie-open-ai-api-key/versions/1"
+	)
 	return response.payload.data.decode()
 
 def select_weighted_list_of_movie_names(batch_size):
@@ -106,18 +109,22 @@ def select_weighted_list_of_movie_names(batch_size):
 	Return
 		A list of selected movie names
 	"""
-	with open("data/weight_config.json") as f:
+	with open(BASE / "data" / "weight_config.json") as f:
 		weight_config = json.load(f)
 
 	# Generate a weighted list of source files to read and convert the list of (potentially) repeated file
 	# names to a Counter
-	sampled_source_files = random.choices(list(weight_config.keys()), weights=weight_config.values(), k=batch_size)
+	sampled_source_files = random.choices(
+		list(weight_config.keys()),
+		weights=weight_config.values(),
+		k=batch_size
+	)
 	c = Counter(sampled_source_files)
 
 	source_titles = []
 	# Select movie names from each chosen file according to the count
 	for file in c:
-		with open(f"data/{file}") as f:
+		with open(BASE / "data" / file) as f:
 			titles = [ row.strip() for row in f.readlines() if row.strip() and not row.startswith("#") ]
 			source_titles.extend(random.sample(titles, c[file]))
 
