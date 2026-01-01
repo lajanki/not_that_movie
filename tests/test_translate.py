@@ -75,10 +75,10 @@ def test_get_infobox(mock_soup):
     assert translate.get_movie_infobox(mock_soup) == expected
 
 
+@pytest.mark.asyncio
 @patch("app.translate.translator")
-def test_generated_schema(mock_translate):
+async def asynctest_generated_schema(mock_translator):
     """Validate high level schema of the translated description."""
-    mock_translate.translate.return_value = Mock(text="")
 
     sections_to_translate = {
         "title": "A title",
@@ -86,7 +86,7 @@ def test_generated_schema(mock_translate):
         "cast": "Tom Skellick as Jack\nNick Hardfloor as The Hammer",
         "infobox": "key1:value1\n\nkey2:value2"
     }
-    translation = translate.generate_translation(sections_to_translate, 2)
+    translation = await translate.generate_translation(sections_to_translate, 2)
 
     expected_schema = schema({
         "plot": str,

@@ -1,14 +1,14 @@
+import asyncio
 import json
 import logging
 import random
 import re
 import requests
 from datetime import date
-from urllib.parse import quote, unquote
+from urllib.parse import unquote
 
 from bs4 import BeautifulSoup
 from googletrans import Translator, LANGUAGES
-import httpx
 
 from app import (
 	create_image,
@@ -18,12 +18,11 @@ from app import (
 )
 
 
-timeout = httpx.Timeout(10)
-translator = Translator(timeout=timeout)
+translator = Translator()
 
 BASE_URL = "https://en.wikipedia.org/api/rest_v1/page/html"
 
-def batch_translate_and_upload(batch_size, k=2):
+async def batch_translate_and_upload(batch_size, k=2):
 	"""Translate a random sample of titles and store results to
 	Cloud Storage bucket.
 	Args:
@@ -57,7 +56,7 @@ def batch_translate_and_upload(batch_size, k=2):
 			"cast": get_cast(soup),
 			"infobox": utils.dict_to_newline_string(get_movie_infobox(soup))
 		}
-		result = generate_translation(sections_to_translate, k)
+		result = await generate_translation(sections_to_translate, k)
 
 		# Add the original titles
 		result["metadata"].update({
@@ -73,7 +72,7 @@ def batch_translate_and_upload(batch_size, k=2):
 			f"movies/{date.today().strftime('%Y-%m-%d')}/{title}/description.json"
 		)
 
-def generate_translation(sections_to_translate, k, target_language="en"):
+async def generate_translation(sections_to_translate, k, target_language="en"):
 	"""Translate a single Wikipedia movie article.
 	Args:
 		sections_to_translate (dict): A mapping of sections fron the original article to translate
@@ -81,7 +80,7 @@ def generate_translation(sections_to_translate, k, target_language="en"):
 		target_language (str): language code for the final output language
 	Return:
 		A dict of the trasnalted section, similar to the input
-	"""	
+	"""
 	translated_sections = {}
 	chain = generate_language_chain(k, source_language="en", target_language=target_language)
 	language_names = " => ".join([LANGUAGES[code] for code in chain])
@@ -95,7 +94,7 @@ def generate_translation(sections_to_translate, k, target_language="en"):
 			text = text[:5000]
 		
 		for previous, current in zip(chain, chain[1:]):
-			translated = translator.translate(text, src=previous, dest=current)
+			translated = await translator.translate(text, src=previous, dest=current)
 			text = translated.text
 		
 		text = utils.cleanup_translation(text)

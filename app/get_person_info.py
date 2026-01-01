@@ -1,3 +1,4 @@
+import asyncio
 import json
 import logging
 import random
@@ -13,7 +14,7 @@ from app import (
 )
 
 
-def batch_translate_and_upload(batch_size, k=2):
+async def batch_translate_and_upload(batch_size, k=2):
 	"""Translate a random sample of titles for person articles and store results to
 	Cloud Storage bucket.
 	Args:
@@ -44,7 +45,8 @@ def batch_translate_and_upload(batch_size, k=2):
 			"description": get_description(soup),
 			"infobox": utils.dict_to_newline_string(get_person_infobox(soup))
 		}
-		result = translate.generate_translation(sections_to_translate, k)
+		result = await translate.generate_translation(sections_to_translate, k)
+        
 		result["img"] = img_blob.public_url
 		result["img_prompt"] = prompt
 
