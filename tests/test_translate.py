@@ -74,11 +74,13 @@ def test_get_infobox(mock_soup):
     }
     assert translate.get_movie_infobox(mock_soup) == expected
 
-
 @pytest.mark.asyncio
-@patch("app.translate.translator")
-async def asynctest_generated_schema(mock_translator):
+async def test_generated_schema(mocker):
     """Validate high level schema of the translated description."""
+
+    translate_response_mock = Mock(text="Translated content.")
+    mock_api = mocker.AsyncMock(return_value=translate_response_mock)
+    mocker.patch("app.translate.translator.translate", mock_api)
 
     sections_to_translate = {
         "title": "A title",
@@ -96,8 +98,8 @@ async def asynctest_generated_schema(mock_translator):
             "title": str
         }
     })
-    assert expected_schema.is_valid(translation)
 
+    assert expected_schema.is_valid(translation)
 
 @pytest.mark.parametrize(
     "url_title,expected",
