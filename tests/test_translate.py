@@ -117,3 +117,11 @@ async def test_generated_schema(mocker):
 def test_title_formatting(url_title, expected):
     """Test transformation from url encoded title to an article title."""
     assert translate.format_title(url_title) == expected
+
+
+def test_generate_language_chain():
+    """Test language chain generation."""
+    with patch("random.choices", return_value=["fr", "de", "es"]):
+        chain = translate.generate_language_chain(3, "se", "en")
+
+    assert chain == ["se", "fr", "de", "es", "en"]
