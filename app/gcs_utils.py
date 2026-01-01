@@ -10,13 +10,15 @@ from app import ENV, constants
 BUCKET_NAME = f"{ENV}_not_that_movie"
 storage_client = storage.Client()
 
+logger = logging.getLogger(__name__)
+
 
 def upload(contents, destination_blob_name, content_type="text/plain"):
 	"""Uploads a file to the data bucket."""
 	bucket = storage_client.bucket(BUCKET_NAME)
 	blob = bucket.blob(destination_blob_name)
 
-	logging.info("Uploading to gs://%s/%s", BUCKET_NAME, destination_blob_name)
+	logger.info("Uploading to gs://%s/%s", BUCKET_NAME, destination_blob_name)
 	blob.upload_from_string(contents, content_type=content_type)
 	return blob
 

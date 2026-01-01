@@ -6,9 +6,18 @@ from pathlib import Path
 ENV = os.getenv("ENV", "dev")
 BASE = Path(__file__).parent
 
-# Configure logging before any other imports
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    datefmt='%Y-%m-%d %H:%M:%S'
-)
+
+def setup_logging():
+    logger = logging.getLogger(__name__)
+    logger.setLevel(logging.INFO)
+
+    console = logging.StreamHandler()
+    console.setLevel(logging.INFO)
+
+    fmt = logging.Formatter(
+        "%(asctime)s [%(levelname)s] %(name)s: %(message)s"
+    )
+    console.setFormatter(fmt)
+    logger.addHandler(console)
+
+    return logger

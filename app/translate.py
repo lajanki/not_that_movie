@@ -1,4 +1,3 @@
-import asyncio
 import json
 import logging
 import random
@@ -11,13 +10,14 @@ from bs4 import BeautifulSoup
 from googletrans import Translator, LANGUAGES
 
 from app import (
-	create_image,
 	ENV,
+	create_image,
 	gcs_utils,
 	utils,
 )
 
 
+logger = logging.getLogger(__name__)
 translator = Translator()
 
 BASE_URL = "https://en.wikipedia.org/api/rest_v1/page/html"
@@ -31,12 +31,12 @@ async def batch_translate_and_upload(batch_size, k=2):
 	"""
 	titles = utils.select_weighted_list_of_movie_names(batch_size)
 	for url_title in titles:
-		logging.info("##%s", url_title)
-		logging.info("%s/%s", BASE_URL, url_title)
+		logger.info("##%s", url_title)
+		logger.info("%s/%s", BASE_URL, url_title)
 
 		soup = make_soup(url_title)
 		if not soup.select("#Plot"):
-			logging.error(f"https://en.wikipedia.org/wiki/{url_title} doesn't apper to be a valid movie article.")
+			logger.error("https://en.wikipedia.org/wiki/%s doesn't apper to be a valid movie article.", url_title)
 			continue
 
 		title = format_title(url_title)
@@ -84,13 +84,13 @@ async def generate_translation(sections_to_translate, k, target_language="en"):
 	translated_sections = {}
 	chain = generate_language_chain(k, source_language="en", target_language=target_language)
 	language_names = " => ".join([LANGUAGES[code] for code in chain])
-	logging.info("Languages to use %s", language_names)
+	logger.info("Languages to use %s", language_names)
 	for idx, section in enumerate(sections_to_translate):
-		logging.info("Translating %s (%d of %d)", section, idx+1, len(sections_to_translate))
+		logger.info("Translating %s (%d of %d)", section, idx+1, len(sections_to_translate))
 		# Remove citation tokens (ie. [1], [2] etc.)
 		text = sections_to_translate[section]
 		if len(text) > 5000:
-			logging.info("%s length=%d, truncating to 5000 characters", section, len(text))
+			logger.info("%s length=%d, truncating to 5000 characters", section, len(text))
 			text = text[:5000]
 		
 		for previous, current in zip(chain, chain[1:]):

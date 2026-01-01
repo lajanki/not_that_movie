@@ -7,6 +7,7 @@ from flask import (
 )
 
 from app import (
+	setup_logging,
 	translate,
 	get_person_info,
 	gcs_utils,
@@ -14,6 +15,8 @@ from app import (
 	constants
 )
 
+# Create a logger once, other modules can get it via logging.getLogger(__name__)
+setup_logging()
 
 app = Flask(__name__)
 

@@ -8,6 +8,8 @@ from google.cloud import secretmanager
 
 from app import BASE
 
+logger = logging.getLogger(__name__)
+
 
 def dict_to_newline_string(dict_):
 	"""Convert a dictionary to a key: value string for translatation
@@ -36,7 +38,7 @@ def newline_string_to_dict(text):
 	for line in items:
 		# The key, value separator may have been removed in the translation
 		if ":" not in line:
-			logging.warning("Can't parse '%s' as key: value, ignoring...", line)
+			logger.warning("Can't parse '%s' as key: value, ignoring...", line)
 			continue
 			
 		tokens = line.split(":")

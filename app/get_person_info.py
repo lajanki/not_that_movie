@@ -1,4 +1,3 @@
-import asyncio
 import json
 import logging
 import random
@@ -14,6 +13,9 @@ from app import (
 )
 
 
+logger = logging.getLogger(__name__)
+
+
 async def batch_translate_and_upload(batch_size, k=2):
 	"""Translate a random sample of titles for person articles and store results to
 	Cloud Storage bucket.
@@ -24,8 +26,8 @@ async def batch_translate_and_upload(batch_size, k=2):
 	people_tokens = random.sample(get_people_list(), batch_size)
 	for token in people_tokens:
 		url_title = token.split(";")[1]
-		logging.info("##%s", url_title)
-		logging.info("%s/%s", translate.BASE_URL, url_title)
+		logger.info("##%s", url_title)
+		logger.info("%s/%s", translate.BASE_URL, url_title)
 
 		soup = translate.make_soup(url_title)
 		title = translate.format_title(url_title)
