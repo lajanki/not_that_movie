@@ -85,9 +85,10 @@ async def generate_translation(sections_to_translate, k, target_language="en"):
 	chain = generate_language_chain(k, source_language="en", target_language=target_language)
 	language_names = " => ".join([LANGUAGES[code] for code in chain])
 	logger.info("Languages to use %s", language_names)
+
 	for idx, section in enumerate(sections_to_translate):
 		logger.info("Translating %s (%d of %d)", section, idx+1, len(sections_to_translate))
-		# Remove citation tokens (ie. [1], [2] etc.)
+
 		text = sections_to_translate[section]
 		if len(text) > 5000:
 			logger.info("%s length=%d, truncating to 5000 characters", section, len(text))
@@ -124,6 +125,9 @@ def make_soup(title):
 	Return:
 		The parsed content of the page as BeautifulSoup object
 	"""
+
+	# The API requires a User-Agent header
+	# https://foundation.wikimedia.org/wiki/Policy:Wikimedia_Foundation_User-Agent_Policy
 	headers = {
 		"User-Agent": "NotThatMovieBot/1.0 (https://not-that-movie.net rrt-info-1.20205@protonmail.com)"
 	}
@@ -229,5 +233,5 @@ def format_title(url_title):
 	 * remove (film) suffix
 	"""
 	title = unquote(url_title)
-	title = re.sub("\(.*film\)", "", title)
+	title = re.sub(r"\(.*film\)", "", title)
 	return title.replace("_", " ").strip()
