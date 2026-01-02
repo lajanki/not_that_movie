@@ -75,12 +75,46 @@ def test_get_infobox(mock_soup):
     assert translate.get_movie_infobox(mock_soup) == expected
 
 @pytest.mark.asyncio
+async def test_translation_chain(mocker):
+    """Test chained translation calls."""
+
+    # Mock language chain generation to a fixed sequence
+    mocker.patch(
+        "app.translate.generate_language_chain",
+        Mock(return_value=["en", "fr", "de", "en"])
+    )
+
+    mock_translate = mocker.AsyncMock(return_value=Mock(text="Translated content."))
+    mocker.patch("app.translate.translator.translate", mock_translate)
+
+    sections_to_translate = {
+        "title": "A title",
+        "plot": "Meaningful description.",
+        "cast": "Tom Skellick as Jack\nNick Hardfloor as The Hammer",
+        "infobox": "key1:value1\n\nkey2:value2"
+    }
+    await translate.generate_translation(sections_to_translate, 2)
+
+    assert mock_translate.await_args_list == [
+        mocker.call("A title", src="en", dest="fr"),
+        mocker.call("Translated content.", src="fr", dest="de"),
+        mocker.call("Translated content.", src="de", dest="en"),
+        mocker.call("Meaningful description.", src="en", dest="fr"),
+        mocker.call("Translated content.", src="fr", dest="de"),
+        mocker.call("Translated content.", src="de", dest="en"),
+        mocker.call("Tom Skellick as Jack\nNick Hardfloor as The Hammer", src="en", dest="fr"),
+        mocker.call("Translated content.", src="fr", dest="de"),
+        mocker.call("Translated content.", src="de", dest="en"),
+        mocker.call("key1:value1\n\nkey2:value2", src="en", dest="fr"),
+        mocker.call("Translated content.", src="fr", dest="de"),
+        mocker.call("Translated content.", src="de", dest="en")
+    ]
+
+@pytest.mark.asyncio
 async def test_generated_schema(mocker):
     """Validate high level schema of the translated description."""
-
-    translate_response_mock = Mock(text="Translated content.")
-    mock_api = mocker.AsyncMock(return_value=translate_response_mock)
-    mocker.patch("app.translate.translator.translate", mock_api)
+    mock_translate = mocker.AsyncMock(return_value=Mock(text="Translated content."))
+    mocker.patch("app.translate.translator.translate", mock_translate)
 
     sections_to_translate = {
         "title": "A title",
