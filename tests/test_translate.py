@@ -74,11 +74,18 @@ def test_get_infobox(mock_soup):
     }
     assert translate.get_movie_infobox(mock_soup) == expected
 
+@pytest.mark.asyncio
+async def test_translation_chain(mocker):
+    """Test chained translation calls."""
 
-@patch("app.translate.translator")
-def test_generated_schema(mock_translate):
-    """Validate high level schema of the translated description."""
-    mock_translate.translate.return_value = Mock(text="")
+    # Mock language chain generation to a fixed sequence
+    mocker.patch(
+        "app.translate.generate_language_chain",
+        Mock(return_value=["en", "fr", "de", "en"])
+    )
+
+    mock_translate = mocker.AsyncMock(return_value=Mock(text="Translated content."))
+    mocker.patch("app.translate.translator.translate", mock_translate)
 
     sections_to_translate = {
         "title": "A title",
@@ -86,7 +93,36 @@ def test_generated_schema(mock_translate):
         "cast": "Tom Skellick as Jack\nNick Hardfloor as The Hammer",
         "infobox": "key1:value1\n\nkey2:value2"
     }
-    translation = translate.generate_translation(sections_to_translate, 2)
+    await translate.generate_translation(sections_to_translate, 2)
+
+    assert mock_translate.await_args_list == [
+        mocker.call("A title", src="en", dest="fr"),
+        mocker.call("Translated content.", src="fr", dest="de"),
+        mocker.call("Translated content.", src="de", dest="en"),
+        mocker.call("Meaningful description.", src="en", dest="fr"),
+        mocker.call("Translated content.", src="fr", dest="de"),
+        mocker.call("Translated content.", src="de", dest="en"),
+        mocker.call("Tom Skellick as Jack\nNick Hardfloor as The Hammer", src="en", dest="fr"),
+        mocker.call("Translated content.", src="fr", dest="de"),
+        mocker.call("Translated content.", src="de", dest="en"),
+        mocker.call("key1:value1\n\nkey2:value2", src="en", dest="fr"),
+        mocker.call("Translated content.", src="fr", dest="de"),
+        mocker.call("Translated content.", src="de", dest="en")
+    ]
+
+@pytest.mark.asyncio
+async def test_generated_schema(mocker):
+    """Validate high level schema of the translated description."""
+    mock_translate = mocker.AsyncMock(return_value=Mock(text="Translated content."))
+    mocker.patch("app.translate.translator.translate", mock_translate)
+
+    sections_to_translate = {
+        "title": "A title",
+        "plot": "Meaningful description.",
+        "cast": "Tom Skellick as Jack\nNick Hardfloor as The Hammer",
+        "infobox": "key1:value1\n\nkey2:value2"
+    }
+    translation = await translate.generate_translation(sections_to_translate, 2)
 
     expected_schema = schema({
         "plot": str,
@@ -96,8 +132,8 @@ def test_generated_schema(mock_translate):
             "title": str
         }
     })
-    assert expected_schema.is_valid(translation)
 
+    assert expected_schema.is_valid(translation)
 
 @pytest.mark.parametrize(
     "url_title,expected",
@@ -115,3 +151,11 @@ def test_generated_schema(mock_translate):
 def test_title_formatting(url_title, expected):
     """Test transformation from url encoded title to an article title."""
     assert translate.format_title(url_title) == expected
+
+
+def test_generate_language_chain():
+    """Test language chain generation."""
+    with patch("random.choices", return_value=["fr", "de", "es"]):
+        chain = translate.generate_language_chain(3, "se", "en")
+
+    assert chain == ["se", "fr", "de", "es", "en"]

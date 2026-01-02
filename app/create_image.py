@@ -6,6 +6,8 @@ import openai
 from app import utils, BASE
 
 
+logger = logging.getLogger(__name__)
+
 def create_image(prompt):
 	"""Generate an image using openai DALL-E model."""
 	openai.api_key = utils.get_openai_secret()
@@ -22,7 +24,7 @@ def create_image(prompt):
 
 def create_test_image(*args):
 	"""Get test image content."""
-	logging.info("Using default poster image")
+	logger.info("Using default poster image")
 	with open(BASE / "static" / "default_poster.png", "rb") as f:
 		return f.read()
 

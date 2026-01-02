@@ -1,3 +1,4 @@
+import asyncio
 from flask import (
 	Flask,
 	render_template,
@@ -6,6 +7,7 @@ from flask import (
 )
 
 from app import (
+	setup_logging,
 	translate,
 	get_person_info,
 	gcs_utils,
@@ -13,6 +15,8 @@ from app import (
 	constants
 )
 
+# Create a logger once, other modules can get it via logging.getLogger(__name__)
+setup_logging()
 
 app = Flask(__name__)
 
@@ -34,9 +38,9 @@ def generate_descriptions():
 		k = int(request.args.get("k", 2))
 
 		if request.args.get("type") == constants.ContentType.PERSON.name:
-			get_person_info.batch_translate_and_upload(batch_size, k)
+			asyncio.run(get_person_info.batch_translate_and_upload(batch_size, k))
 		elif request.args.get("type") == constants.ContentType.MOVIE.name:
-			translate.batch_translate_and_upload(batch_size, k)
+			asyncio.run(translate.batch_translate_and_upload(batch_size, k))
 		else:
 			print("No valid content type provided, skipping content generation.")
 
