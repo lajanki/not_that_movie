@@ -86,6 +86,11 @@ ul.nav a:hover {
 	color: #9c5b84 !important; 
 }
 
+.nav-tabs .nav-link.active {
+	background-color: #f5e6f0;
+	color: #9c5b84 !important;
+}
+
 div.loader {
 	margin-bottom: 25px;
 }
