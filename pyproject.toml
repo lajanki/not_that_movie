@@ -10,7 +10,8 @@ dependencies = [
     "google-cloud-storage>=2.10.0",
     "googletrans==4.0.2",
     "gunicorn",
-    "openai",
+    "openai>=2.33.0",
+    "pillow>=12.2.0",
 ]
 
 [dependency-groups]

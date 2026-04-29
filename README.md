@@ -19,7 +19,7 @@ Movie plots are pregenerated at regular intervals by translating existing plots 
 intermediary languages back to English using Google Translate. Generated plots are stored to a public Cloud Storage bucket
 to be read by the frontend.
 
-Additionally, a poster image is generated via OpenAI's [DALL-E](https://openai.com/dall-e-2) model.
+Additionally, a poster image is generated via OpenAI image model.
 
 ![User flow](./user_flow.png)
 
@@ -46,7 +46,7 @@ curl -H "X-Appengine-Cron: 1" "http://127.0.0.1:5000/_generate?type=PERSON&batch
 > The Google Translate API is rate limited. Each generation request includes multiple sections to translate. Therefore, is better to make several generation calls with moderate `batch_size` over a timeframe than to use a large batch size.
 
 > [!NOTE]  
-> When ran locally, the poster image generation is skipped in order to save DALL-E API tokens. A template image will be used instead. 
+> When ran locally, the poster image generation is skipped in order to save API tokens. A template image will be used instead. 
 
 ### Unit tests
 Unit tests for the Python backend can be run with
