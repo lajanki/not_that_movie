@@ -42,7 +42,8 @@ async def batch_translate_and_upload(batch_size, k=2):
 		title = format_title(url_title)
 			
 		# Generate and upload a poster image
-		prompt = f"{title} Movie Poster"
+		prompt = f"A poster to a fictional movie titled '{title}'"
+		logger.info("Image prompt: %s", prompt)
 		img_blob = gcs_utils.upload(
 			create_image.create_image_by_env[ENV](prompt),
 			f"movies/{date.today().strftime('%Y-%m-%d')}/{title}/image.png",
