@@ -1,6 +1,6 @@
 actor;A professional headshot of a young, handsome actor
 actor;A professional headshot of an old, well respected, actor
-actor;A famous actor on the red carpet of an award gala
+actor;An actor on the red carpet of an award gala
 actor;An old comedian performing standup
 actor;A classical English theater actor
 actor;An actor on the set of a comedy film
@@ -47,21 +47,19 @@ actor;A well respected comedian walking down the street
 actor;A classic black-and-white portrait of an elegant actress
 actor;A actor known for portraying a cartoon character next to a children's toy of the character
 actor;A late night host delivering a monologue
-actor;A famous actor as a guest on a late night TV show
+actor;An actor as a guest on a late night TV show
 actor;A grand old lady bowing to the audience on a large theater stage
-actor;A paparazzi shot taken in secret of a famous actor stepping on the street
 actor;A performer reciting a poem to an audience
 actor;An actor as guest on a podcast
-actor;A famous actor next to a card board cutout of himself
-actor;A famous actor waving to a group of fans
-actor;A famous actor signing autogprahs for a group of enthusiastic fans
+actor;An actor next to a card board cutout of himself
+actor;An actor waving to a group of fans
+actor;An actor signing autogprahs for a group of enthusiastic fans
 actor;A young actor next to a fancy sports car they just bought
 actor;An actor grinning and pointing to a photograph of themselves
 actor;An actor being surrounded by enthusiastic fans
 actor;An actor being surrounded by paparazzi taking photographs
 actor;An actor giving a one on one TV interview in a set containing comfortable chairs
 actor;An actor taking part in a political demonstration
-
 director;A director on the set of a film
 director;A movie director next to a set of cameras
 director;A movie director looking into a film camera
@@ -80,4 +78,4 @@ director;A movie director next to a miniature model of a scene about to be shot
 director;A movie director giving an interview wearing dark sunglasses
 director;A movie director with a pose seen through a clap board
 director;A promotional shot of a movie director standing in front of a poster of their movie
-director;A movie director holding a prop from a movie that made them famous
+director;A movie director holding a prop from one of their movies
