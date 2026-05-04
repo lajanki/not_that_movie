@@ -35,6 +35,7 @@ async def batch_translate_and_upload(batch_size, k=2):
 		# Generate and upload a poster image
 		category = token.split(";")[0]
 		prompt = get_person_portrait_prompt(category)
+		logger.info("Image prompt: %s", prompt)
 		img_blob = gcs_utils.upload(
 			create_image.create_image_by_env[ENV](prompt),
 			f"people/{date.today().strftime('%Y-%m-%d')}/{title}/image.png",
@@ -48,7 +49,7 @@ async def batch_translate_and_upload(batch_size, k=2):
 			"infobox": utils.dict_to_newline_string(get_person_infobox(soup))
 		}
 		result = await translate.generate_translation(sections_to_translate, k)
-        
+		
 		result["img"] = img_blob.public_url
 		result["img_prompt"] = prompt
 
@@ -63,16 +64,16 @@ async def batch_translate_and_upload(batch_size, k=2):
 		)
 
 def get_description(soup):
-    """Get a short description for this person; the first paragraph in the article.
+	"""Get a short description for this person; the first paragraph in the article.
 	Return
 		string with paragraphs delimited by double newline
 	"""
-    paragraphs = [
-        utils.cleanup_source_text(tag.text)
-        for tag in soup.select("body > section:first-child > p")
-    ]
+	paragraphs = [
+		utils.cleanup_source_text(tag.text)
+		for tag in soup.select("body > section:first-child > p")
+	]
 
-    return "\n\n".join([p for p in paragraphs if p])
+	return "\n\n".join([p for p in paragraphs if p])
 
 def get_person_infobox(soup):
 	"""Get selected metadata from the right side info table.
@@ -105,27 +106,27 @@ def get_person_infobox(soup):
 	return translate._get_infobox(soup, headers_to_extract)
 
 def get_people_list():
-    """Get a list of people from people.txt."""
-    with open(BASE / "data" / "people.txt") as f:
-        people = [
-            row.strip()
-            for row in f.readlines()
-            if row.strip() and not row.startswith("#")
-        ]
+	"""Get a list of people from people.txt."""
+	with open(BASE / "data" / "people.txt") as f:
+		people = [
+			row.strip()
+			for row in f.readlines()
+			if row.strip() and not row.startswith("#")
+		]
 
-    return people
+	return people
 
 def get_person_portrait_prompt(category):
-    """Select a random prompt for a person portrait image.
-    Args:
-        category (str): the category of prompts to choose from: actor|director
-    """
-    with open(BASE / "data" / "portrait_prompts.txt") as f:
-        prompts = [
-            row.split(";")[1].strip()
-            for row in f.readlines()
-            if row.strip()
-            and not row.startswith("#")
-            and row.split(";")[0].strip() == category
-        ]
-    return random.choice(prompts)
+	"""Select a random prompt for a person portrait image.
+	Args:
+		category (str): the category of prompts to choose from: actor|director
+	"""
+	with open(BASE / "data" / "portrait_prompts.txt") as f:
+		prompts = [
+			row.split(";")[1].strip()
+			for row in f.readlines()
+			if row.strip()
+			and not row.startswith("#")
+			and row.split(";")[0].strip() == category
+		]
+	return random.choice(prompts)

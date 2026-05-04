@@ -1,7 +1,9 @@
 import base64
+from io import BytesIO
 import logging
 
-import openai
+from openai import OpenAI
+from PIL import Image
 
 from app import utils, BASE
 
@@ -9,18 +11,30 @@ from app import utils, BASE
 logger = logging.getLogger(__name__)
 
 def create_image(prompt):
-	"""Generate an image using openai DALL-E model."""
-	openai.api_key = utils.get_openai_secret()
+	"""Generate an image using OpenAI image model."""
+	api_key = utils.get_openai_secret()
+	client = OpenAI(api_key=api_key)
 
-	response = openai.Image.create(
+	img = client.images.generate(
+		model="gpt-image-1-mini",
 		prompt=prompt,
 		n=1,
-		size="256x256",
-		response_format="b64_json"
+		size="1024x1024",
+		quality="low",
 	)
-	image_data = response["data"][0]["b64_json"].encode()
+	image_bytes = base64.b64decode(img.data[0].b64_json)
 
-	return base64.b64decode(image_data)
+	# Resize the image to 512x512 using PIL
+	fp = BytesIO(image_bytes)
+	image = Image.open(fp)
+	image = image.resize((512, 512), Image.LANCZOS)
+
+	fp = BytesIO()
+	image.save(fp, format="PNG")
+
+	fp.seek(0)
+	return fp.getvalue()
+
 
 def create_test_image(*args):
 	"""Get test image content."""
