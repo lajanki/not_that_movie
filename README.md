@@ -21,7 +21,7 @@ to be read by the frontend.
 
 Additionally, a poster image is generated via OpenAI image model.
 
-![User flow](./user_flow.png)
+![User flow](./docs/user_flow.png)
 
 
 ### Running locally
