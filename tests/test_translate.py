@@ -7,7 +7,7 @@ from pytest_schema import schema
 
 # Mock Google Cloud client before importing the main library
 with patch("google.cloud.storage.Client"):
-    from app import translate
+    from webserver import translate
 
 
 @pytest.fixture
@@ -80,12 +80,12 @@ async def test_translation_chain(mocker):
 
     # Mock language chain generation to a fixed sequence
     mocker.patch(
-        "app.translate.generate_language_chain",
+        "webserver.translate.generate_language_chain",
         Mock(return_value=["en", "fr", "de", "en"])
     )
 
     mock_translate = mocker.AsyncMock(return_value=Mock(text="Translated content."))
-    mocker.patch("app.translate.translator.translate", mock_translate)
+    mocker.patch("webserver.translate.translator.translate", mock_translate)
 
     sections_to_translate = {
         "title": "A title",
@@ -114,7 +114,7 @@ async def test_translation_chain(mocker):
 async def test_generated_schema(mocker):
     """Validate high level schema of the translated description."""
     mock_translate = mocker.AsyncMock(return_value=Mock(text="Translated content."))
-    mocker.patch("app.translate.translator.translate", mock_translate)
+    mocker.patch("webserver.translate.translator.translate", mock_translate)
 
     sections_to_translate = {
         "title": "A title",

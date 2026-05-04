@@ -19,5 +19,3 @@ def setup_logging():
     )
     console.setFormatter(fmt)
     logger.addHandler(console)
-
-    return logger

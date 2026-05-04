@@ -9,7 +9,7 @@ from urllib.parse import unquote
 from bs4 import BeautifulSoup
 from googletrans import Translator, LANGUAGES
 
-from app import (
+from webserver import (
 	ENV,
 	create_image,
 	gcs_utils,

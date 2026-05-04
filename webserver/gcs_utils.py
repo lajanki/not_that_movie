@@ -4,7 +4,7 @@ import random
 
 from google.cloud import storage
 
-from app import ENV, constants
+from webserver import ENV, constants
 
 
 BUCKET_NAME = f"{ENV}_not_that_movie"

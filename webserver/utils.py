@@ -6,7 +6,7 @@ import re
 from collections import Counter
 from google.cloud import secretmanager
 
-from app import BASE
+from webserver import BASE
 
 logger = logging.getLogger(__name__)
 

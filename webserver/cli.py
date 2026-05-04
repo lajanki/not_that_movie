@@ -1,8 +1,8 @@
 import click
 from flask.cli import AppGroup
 
-from app.views import app
-from app.tools import demo
+from webserver.views import app
+from webserver.tools import demo
 
 
 task_cli = AppGroup("task")

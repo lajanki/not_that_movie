@@ -6,16 +6,17 @@ from flask import (
 	abort
 )
 
-from app import (
+from webserver import (
 	setup_logging,
 	translate,
 	get_person_info,
 	gcs_utils,
 	utils,
-	constants
 )
+from webserver.constants import ContentType
 
-# Create a logger once, other modules can get it via logging.getLogger(__name__)
+
+# Config the root logger
 setup_logging()
 
 app = Flask(__name__)
@@ -37,9 +38,9 @@ def generate_descriptions():
 		batch_size = int(request.args.get("batch_size", 2))
 		k = int(request.args.get("k", 2))
 
-		if request.args.get("type") == constants.ContentType.PERSON.name:
+		if request.args.get("type") == ContentType.PERSON.name:
 			asyncio.run(get_person_info.batch_translate_and_upload(batch_size, k))
-		elif request.args.get("type") == constants.ContentType.MOVIE.name:
+		elif request.args.get("type") == ContentType.MOVIE.name:
 			asyncio.run(translate.batch_translate_and_upload(batch_size, k))
 		else:
 			print("No valid content type provided, skipping content generation.")
@@ -57,7 +58,7 @@ def fetch_movie_description():
 	if path:
 		data = gcs_utils.download_description(path)
 	else:
-		data = gcs_utils.download_random_content(constants.ContentType.MOVIE)
+		data = gcs_utils.download_random_content(ContentType.MOVIE)
 
 	data = utils.format_as_html(data)
 	return data, 200
@@ -71,6 +72,6 @@ def fetch_movie_index():
 @app.route("/_get_person")
 def fetch_person_description():
 	"""Fetch a random preson from the bucket."""
-	data = gcs_utils.download_random_content(constants.ContentType.PERSON)
+	data = gcs_utils.download_random_content(ContentType.PERSON)
 	data = utils.format_as_html(data)
 	return data, 200

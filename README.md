@@ -29,7 +29,7 @@ The project can be run over localhost with Flask development server.
 
 With `uv` installed, first start the server with
 ```bash
-uv run flask --app app.views:app run --debug
+uv run flask --app webserver.views:app run --debug
 ```
 Then, to generate a set of _2_ movie translations, send a request with
 ```bash
