@@ -35,13 +35,13 @@ def create_image(prompt):
 	fp.seek(0)
 	return fp.getvalue()
 
-def create_test_image(*args):
-	"""Get test image content."""
+def get_template_image(*args):
+	"""Get template image content."""
 	logger.warning("Using default poster image")
 	with open(BASE / "img" / "default_poster.png", "rb") as f:
 		return f.read()
 
 create_image_by_env = {
 	"prod": create_image,
-	"dev": create_test_image
+	"dev": get_template_image
 }

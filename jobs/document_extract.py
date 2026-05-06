@@ -18,10 +18,12 @@ BASE_URL = "https://en.wikipedia.org/api/rest_v1/page/html"
 def make_soup(title):
 	"""Fetch html content based on movie title from the Wikipedia API
 	https://en.wikipedia.org/api/rest_v1/#/Page%20content/get_page_html__title_
+
+	Args:
+		title (str): the url title of the Wikipedia article to fetch, e.g. "
 	Return:
 		The parsed content of the page as BeautifulSoup object
 	"""
-
 	# The API requires a User-Agent header
 	# https://foundation.wikimedia.org/wiki/Policy:Wikimedia_Foundation_User-Agent_Policy
 	headers = {

@@ -14,16 +14,26 @@ logger = logging.getLogger(__name__)
 
 
 def generate_language_chain(k, source_language, target_language):
-	"""Generate a random list of k+2 language codes with the specified
+	"""Generate a language chain for translation.
+	 
+	Randomizes a list of k+2 language codes with the specified
 	initial and last languages.
+
+	Args:
+		k (int): the number of intermediary languages to use
+		source_language (str): the source language code, e.g. "en"
+		target_language (str): the target language code, e.g. "fr"
+	Return:
+		A list of language codes to use for translation in order.
 	"""
 	languages = random.choices(list(LANGUAGES.keys()), k=k)
 	languages = [source_language] + languages + [target_language]
 	return languages
 
 def dict_to_newline_string(dict_):
-	"""Convert a dictionary to a key: value string for translatation
-	purposes. Split each key by newlines.
+	"""Convert a dictionary to a newline delimited key:value string.
+	Only flat dictionaries are supported.
+	 
 	For instance
 		dict_to_newline_string({
 			key1: value1,
@@ -40,7 +50,9 @@ def dict_to_newline_string(dict_):
 
 def newline_string_to_dict(text):
 	"""Parse a newline delimited key: value string as dict.
-	Inverse of above.
+
+	Inverse of dict_to_newline_string; used to map translated
+	infobox content back to a dict.
 	"""
 	data = {}
 	items = text.split("\n\n")
@@ -57,7 +69,13 @@ def newline_string_to_dict(text):
 	return data
 
 def format_as_html(content):
-	"""Convert various sections parsed from an article as html."""
+	"""Convert various sections parsed from an article as html.
+	
+	Args:
+		content (dict): a dict of sections to format, e.g. plot, cast, description
+	Return:
+		A dict with the same keys as the input but with the content formatted as html.
+	"""
 	# plot and cast for a movie article
 	plot = "".join([ f"<p>{p}</p>" for p in content.get("plot", "").split("\n\n") if p ])
 	cast_items = [ f"<li>{p}</li>" for p in content.get("cast", "").split("\n") if p ]
@@ -75,8 +93,18 @@ def format_as_html(content):
 	return content
 
 def cleanup_source_text(text, replace_newlines=True):
-	"""Cleanup various whitespace and meta tokens from the parsed source
-	text left from inline html elements such as <a>
+	"""Cleanup various whitespace and meta tokens from parsed html
+	document source text.
+	text.
+
+	The source text may contain various whitespace characters and
+	ref tokens like [1], [2] etc.
+
+	Args:
+		text (str): the text to clean up
+		replace_newlines (bool): whether to replace newlines with whitespace
+	Return:
+		The cleaned up text
 	"""
 	replace_map = str.maketrans({
 		"\u200b": "", # zero-width space
@@ -114,11 +142,17 @@ def get_openai_secret():
 	return response.payload.data.decode()
 
 def select_weighted_list_of_movie_names(batch_size):
-	"""Generate a random list of batch_size movie names selected from all the source list files in data/
-	according to the weights in data/weight_config.json.
+	"""Generate a random list of movie names based on source data files.
+	
+	Weights from data/weight_config.json are used to determine the
+	likelihood of a movie name being selected from each source file.
+
 	The weights are relative to each other with higher value corresponding to the likelihood of that
 	file being used more often.
-	Return
+
+	Args:
+		batch_size (int): the number of movie names to select
+	Return:
 		A list of selected movie names
 	"""
 	with open(BASE / "data" / "weight_config.json") as f:
