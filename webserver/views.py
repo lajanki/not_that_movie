@@ -1,23 +1,12 @@
-import asyncio
 from flask import (
 	Flask,
 	render_template,
 	request,
-	abort
 )
 
-from webserver import (
-	setup_logging,
-	translate,
-	get_person_info,
-	gcs_utils,
-	utils,
-)
-from webserver.constants import ContentType
+from jobs import gcs_utils, utils
+from jobs.constants import ContentType
 
-
-# Config the root logger
-setup_logging()
 
 app = Flask(__name__)
 
@@ -29,25 +18,6 @@ def index():
 @app.route("/movie_index")
 def movie_index():
 	return render_template("movie_index.html")
-
-@app.route("/_generate")
-def generate_descriptions():
-	"""Generate a set of new descriptions, either movies or people, and write to Cloud Storage."""
-	# Only respond to cron request originating from App Engine
-	if "X-Appengine-Cron" in request.headers:
-		batch_size = int(request.args.get("batch_size", 2))
-		k = int(request.args.get("k", 2))
-
-		if request.args.get("type") == ContentType.PERSON.name:
-			asyncio.run(get_person_info.batch_translate_and_upload(batch_size, k))
-		elif request.args.get("type") == ContentType.MOVIE.name:
-			asyncio.run(translate.batch_translate_and_upload(batch_size, k))
-		else:
-			print("No valid content type provided, skipping content generation.")
-
-		return "OK", 200
-
-	abort(500, "Bad request")
 	
 @app.route("/_get")
 def fetch_movie_description():
@@ -58,7 +28,7 @@ def fetch_movie_description():
 	if path:
 		data = gcs_utils.download_description(path)
 	else:
-		data = gcs_utils.download_random_content(ContentType.MOVIE)
+		data = gcs_utils.download_random_content(ContentType.MOVIE.name)
 
 	data = utils.format_as_html(data)
 	return data, 200
@@ -72,6 +42,6 @@ def fetch_movie_index():
 @app.route("/_get_person")
 def fetch_person_description():
 	"""Fetch a random preson from the bucket."""
-	data = gcs_utils.download_random_content(ContentType.PERSON)
+	data = gcs_utils.download_random_content(ContentType.PERSON.name)
 	data = utils.format_as_html(data)
 	return data, 200

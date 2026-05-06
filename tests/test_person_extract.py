@@ -6,7 +6,11 @@ from bs4 import BeautifulSoup
 from pytest_schema import schema
 
 with patch("google.cloud.storage.Client"):
-    from webserver import get_person_info, BASE
+    from jobs import (
+        document_extract,
+        generate_person,
+        BASE
+    )
 
 
 
@@ -39,7 +43,7 @@ def test_get_description(mock_soup):
         'Russell\'s Amsterdam.'
     )
 
-    assert get_person_info.get_description(mock_soup) == expected
+    assert document_extract.get_description(mock_soup) == expected
 
 def test_get_person_infobox(mock_soup):
     """Test content parser for person infobox."""
@@ -53,12 +57,12 @@ def test_get_person_infobox(mock_soup):
         "Relatives": "Paul Myers (brother)"
     }
     
-    assert get_person_info.get_person_infobox(mock_soup) == expected
+    assert document_extract.get_person_infobox(mock_soup) == expected
 
 def test_get_people_list():
     """Test reading the people list from file."""
     # This mainly tests that the correct path is used
     with patch("builtins.open", mock_open()) as mock_file:
-        get_person_info.get_people_list()
+        generate_person.get_people_list()
 
-    mock_file.assert_called_with(BASE / "data/people.txt")
+    mock_file.assert_called_with(BASE / "data" / "people.txt")

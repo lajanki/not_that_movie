@@ -5,11 +5,21 @@ import re
 
 from collections import Counter
 from google.cloud import secretmanager
+from googletrans import LANGUAGES
 
-from webserver import BASE
+from . import BASE
+
 
 logger = logging.getLogger(__name__)
 
+
+def generate_language_chain(k, source_language, target_language):
+	"""Generate a random list of k+2 language codes with the specified
+	initial and last languages.
+	"""
+	languages = random.choices(list(LANGUAGES.keys()), k=k)
+	languages = [source_language] + languages + [target_language]
+	return languages
 
 def dict_to_newline_string(dict_):
 	"""Convert a dictionary to a key: value string for translatation

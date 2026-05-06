@@ -5,7 +5,7 @@ import logging
 from openai import OpenAI
 from PIL import Image
 
-from webserver import utils, BASE
+from . import utils, BASE
 
 
 logger = logging.getLogger(__name__)
@@ -35,11 +35,10 @@ def create_image(prompt):
 	fp.seek(0)
 	return fp.getvalue()
 
-
 def create_test_image(*args):
 	"""Get test image content."""
-	logger.info("Using default poster image")
-	with open(BASE / "static" / "default_poster.png", "rb") as f:
+	logger.warning("Using default poster image")
+	with open(BASE / "img" / "default_poster.png", "rb") as f:
 		return f.read()
 
 create_image_by_env = {

@@ -4,7 +4,9 @@ import random
 
 from google.cloud import storage
 
-from webserver import ENV, constants
+from jobs.constants import ContentType
+from . import ENV
+
 
 
 BUCKET_NAME = f"{ENV}_not_that_movie"
@@ -36,11 +38,12 @@ def download_random_content(content_type):
 	"""
 	# Map content type to bucket prefix
 	prefix_map = {
-		constants.ContentType.PERSON: "people",
-		constants.ContentType.MOVIE: "movies"
+		ContentType.PERSON.name: "people",
+		ContentType.MOVIE.name: "movies"
 	}
+	item_prefix = prefix_map[content_type]
 
-	blobs = storage_client.list_blobs(BUCKET_NAME, match_glob=f"{prefix_map[content_type]}/**.json")
+	blobs = storage_client.list_blobs(BUCKET_NAME, match_glob=f"{item_prefix}/**.json")
 	selected_blob = random.choice(list(blobs))
 	return json.loads(selected_blob.download_as_text())
 

@@ -3,11 +3,12 @@ import logging
 import random
 from datetime import date
 
-from webserver import (
+from . import (
+	document_extract,
+	generate_movie,
 	utils,
 	gcs_utils,
 	create_image,
-	translate,
 	ENV,
 	BASE,
 )
@@ -27,10 +28,10 @@ async def batch_translate_and_upload(batch_size, k=2):
 	for token in people_tokens:
 		url_title = token.split(";")[1]
 		logger.info("##%s", url_title)
-		logger.info("%s/%s", translate.BASE_URL, url_title)
+		logger.info("%s/%s", document_extract.BASE_URL, url_title)
 
-		soup = translate.make_soup(url_title)
-		title = translate.format_title(url_title)
+		soup = document_extract.make_soup(url_title)
+		title = document_extract.format_title(url_title)
 
 		# Generate and upload a poster image
 		category = token.split(";")[0]
@@ -45,10 +46,10 @@ async def batch_translate_and_upload(batch_size, k=2):
 		# Generate a translation
 		sections_to_translate = {
 			"title": title,
-			"description": get_description(soup),
-			"infobox": utils.dict_to_newline_string(get_person_infobox(soup))
+			"description": document_extract.get_description(soup),
+			"infobox": utils.dict_to_newline_string(document_extract.get_person_infobox(soup))
 		}
-		result = await translate.generate_translation(sections_to_translate, k)
+		result = await generate_movie.generate_translation(sections_to_translate, k)
 		
 		result["img"] = img_blob.public_url
 		result["img_prompt"] = prompt
@@ -62,48 +63,6 @@ async def batch_translate_and_upload(batch_size, k=2):
 			json.dumps(result),
 			f"people/{date.today().strftime('%Y-%m-%d')}/{title}/description.json"
 		)
-
-def get_description(soup):
-	"""Get a short description for this person; the first paragraph in the article.
-	Return
-		string with paragraphs delimited by double newline
-	"""
-	paragraphs = [
-		utils.cleanup_source_text(tag.text)
-		for tag in soup.select("body > section:first-child > p")
-	]
-
-	return "\n\n".join([p for p in paragraphs if p])
-
-def get_person_infobox(soup):
-	"""Get selected metadata from the right side info table.
-	Return:
-		a dict of parsed content
-	"""
-	headers_to_extract = [
-		"Alma mater",
-		"Awards",
-		"Born",
-		"Children",
-		"Citizenship",
-		"Died",
-		"Education",
-		"Known for",
-		"Nationality",
-		"Occupation",
-		"Occupations",
-		"Partner",
-		"Partners",
-		"Political party",
-		"Relatives",
-		"Spouse",
-		"Spouses",
-		"Works",
-		"Years active",
-		"Yearsactive",
-	]
-
-	return translate._get_infobox(soup, headers_to_extract)
 
 def get_people_list():
 	"""Get a list of people from people.txt."""
