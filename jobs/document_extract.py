@@ -1,18 +1,13 @@
-import logging
 import re
 import requests
 from urllib.parse import unquote
 
 from bs4 import BeautifulSoup
 
-from . import utils
-
-
-logger = logging.getLogger(__name__)
+from jobs import utils
 
 
 BASE_URL = "https://en.wikipedia.org/api/rest_v1/page/html"
-
 
 
 def make_soup(title):

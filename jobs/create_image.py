@@ -5,7 +5,7 @@ import logging
 from openai import OpenAI
 from PIL import Image
 
-from . import utils, BASE
+from jobs import utils, BASE
 
 
 logger = logging.getLogger(__name__)

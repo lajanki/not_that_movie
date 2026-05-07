@@ -1,9 +1,9 @@
 import argparse
 import asyncio
 
-from . import (
+from jobs import (
 	generate_movie,
-	generate_person,
+	generate_person
 )
 
 
@@ -15,7 +15,7 @@ if __name__ == "__main__":
 	parser.add_argument("--batch_size", type=int, default=1,
 						help="Number of descriptions to generate in this batch.")
 	parser.add_argument("--k", type=int, default=2,
-						help="Number of translations to generate for each description.")
+						help="Number of intermediary languages to translate to.")
 	args = parser.parse_args()
 
 	if args.type == "movie":

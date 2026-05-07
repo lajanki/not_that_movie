@@ -7,7 +7,7 @@ from collections import Counter
 from google.cloud import secretmanager
 from googletrans import LANGUAGES
 
-from . import BASE
+from jobs import BASE
 
 
 logger = logging.getLogger(__name__)

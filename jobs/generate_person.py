@@ -3,7 +3,7 @@ import logging
 import random
 from datetime import date
 
-from . import (
+from jobs import (
 	document_extract,
 	generate_movie,
 	utils,

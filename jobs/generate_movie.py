@@ -4,7 +4,7 @@ from datetime import date
 
 from googletrans import Translator, LANGUAGES
 
-from . import (
+from jobs import (
 	ENV,
 	create_image,
 	gcs_utils,

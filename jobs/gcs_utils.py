@@ -4,8 +4,8 @@ import random
 
 from google.cloud import storage
 
+from jobs import ENV
 from jobs.constants import ContentType
-from . import ENV
 
 
 
