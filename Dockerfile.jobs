@@ -1,0 +1,27 @@
+# syntax=docker/dockerfile:1
+FROM python:3.11-slim
+
+# Create a non-root user and group
+RUN addgroup --system appgroup && adduser --system --ingroup appgroup appuser
+
+WORKDIR /app
+
+# Copy only the lock file first for better caching
+COPY pyproject.toml uv.lock ./
+
+# Install uv and dependencies
+RUN pip install uv
+RUN uv sync
+
+# Copy the rest of the code
+COPY jobs ./jobs
+
+# Set permissions for the non-root user
+RUN chown -R appuser:appgroup /app
+
+# Set HOME to a writable directory for appuser
+ENV HOME=/app
+
+USER appuser
+
+ENTRYPOINT ["uv", "run", "-m", "jobs.main"]
