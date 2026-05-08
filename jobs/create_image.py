@@ -1,18 +1,19 @@
 import base64
 from io import BytesIO
 import logging
+import os
 
 from openai import OpenAI
 from PIL import Image
 
-from jobs import utils, BASE
+from jobs import BASE
 
 
 logger = logging.getLogger(__name__)
 
 def create_image(prompt):
 	"""Generate an image using OpenAI image model."""
-	api_key = utils.get_openai_secret()
+	api_key = os.environ["OPENAI_API_KEY"]
 	client = OpenAI(api_key=api_key)
 
 	img = client.images.generate(

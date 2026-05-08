@@ -4,7 +4,6 @@ import random
 import re
 
 from collections import Counter
-from google.cloud import secretmanager
 from googletrans import LANGUAGES
 
 from jobs import BASE
@@ -132,14 +131,6 @@ def cleanup_translation(s):
 	# Add whitespace if next character is uppercase
 	s = re.sub(r"([a-z])(\.)([A-Z])", r"\g<1>. \g<3>", s)
 	return s
-
-def get_openai_secret():
-	"""Fetch OpenAI API key from Secret Manager."""
-	client = secretmanager.SecretManagerServiceClient()
-	response = client.access_secret_version(
-		name="projects/webhost-common/secrets/not-that-movie-open-ai-api-key/versions/1"
-	)
-	return response.payload.data.decode()
 
 def select_weighted_list_of_movie_names(batch_size):
 	"""Generate a random list of movie names based on source data files.
