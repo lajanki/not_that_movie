@@ -43,5 +43,6 @@ def get_template_image(*args):
 
 create_image_by_env = {
 	"prod": create_image,
+	"stg": create_image,
 	"dev": get_template_image
 }

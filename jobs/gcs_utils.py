@@ -8,8 +8,13 @@ from jobs import ENV
 from jobs.constants import ContentType
 
 
+bucket_map = {
+    "dev": "dev_not_that_movie",
+	"stg": "dev_not_that_movie",
+	"prod": "prod_not_that_movie"
+}
 
-BUCKET_NAME = f"{ENV}_not_that_movie"
+BUCKET_NAME = bucket_map[ENV]
 storage_client = storage.Client()
 
 logger = logging.getLogger(__name__)
