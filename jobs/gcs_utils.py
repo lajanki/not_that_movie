@@ -3,16 +3,9 @@ import logging
 import random
 
 from google.cloud import storage
-
 from jobs import ENV
 from jobs.constants import ContentType
-
-
-bucket_map = {
-    "dev": "dev_not_that_movie",
-	"stg": "dev_not_that_movie",
-	"prod": "prod_not_that_movie"
-}
+from jobs.env_config import bucket_map
 
 BUCKET_NAME = bucket_map[ENV]
 storage_client = storage.Client()

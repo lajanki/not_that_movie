@@ -5,16 +5,17 @@ from datetime import date
 
 from jobs import (
 	document_extract,
+	env_config,
 	generate_movie,
 	utils,
 	gcs_utils,
-	create_image,
 	ENV,
 	BASE,
 )
 
 
 logger = logging.getLogger(__name__)
+create_image = env_config.create_image_[ENV]
 
 
 async def batch_translate_and_upload(batch_size, k=2):
@@ -38,7 +39,7 @@ async def batch_translate_and_upload(batch_size, k=2):
 		prompt = get_person_portrait_prompt(category)
 		logger.info("Image prompt: %s", prompt)
 		img_blob = gcs_utils.upload(
-			create_image.create_image_by_env[ENV](prompt),
+			create_image(prompt),
 			f"people/{date.today().strftime('%Y-%m-%d')}/{title}/image.png",
 			content_type="image/png"
 		)

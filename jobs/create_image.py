@@ -41,9 +41,3 @@ def get_template_image(*args):
 	logger.warning("Using default poster image")
 	with open(BASE / "img" / "default_poster.png", "rb") as f:
 		return f.read()
-
-create_image_by_env = {
-	"prod": create_image,
-	"stg": create_image,
-	"dev": get_template_image
-}

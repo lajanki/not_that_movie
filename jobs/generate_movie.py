@@ -6,7 +6,7 @@ from googletrans import Translator, LANGUAGES
 
 from jobs import (
 	ENV,
-	create_image,
+	env_config,
 	gcs_utils,
 	utils,
 	document_extract,
@@ -15,6 +15,8 @@ from jobs import (
 
 logger = logging.getLogger(__name__)
 translator = Translator()
+
+create_image = env_config.create_image_[ENV]
 
 
 BASE_URL = "https://en.wikipedia.org/api/rest_v1/page/html"
@@ -42,7 +44,7 @@ async def batch_translate_and_upload(batch_size, k=2):
 		prompt = f"A poster to a fictional movie titled '{title}'"
 		logger.info("Image prompt: %s", prompt)
 		img_blob = gcs_utils.upload(
-			create_image.create_image_by_env[ENV](prompt),
+			create_image(prompt),
 			f"movies/{date.today().strftime('%Y-%m-%d')}/{title}/image.png",
 			content_type="image/png"
 		)
