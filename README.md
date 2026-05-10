@@ -28,25 +28,29 @@ Additionally, a poster image is generated via OpenAI image model.
 The project can be run over localhost with Flask development server.
 
 With `uv` installed, first start the server with
-```bash
+```shell
 uv run flask --app webserver.views:app run --debug
 ```
-Then, to generate a set of _2_ movie translations, send a request with
-```bash
-curl -H "X-Appengine-Cron: 1" "http://127.0.0.1:5000/_generate?type=MOVIE&batch_size=2"
-```
-Resulting plots are stored to the _dev_ bucket.
 
-Similarly, to generate translations for people:
-```bash
-curl -H "X-Appengine-Cron: 1" "http://127.0.0.1:5000/_generate?type=PERSON&batch_size=2"
+Background tasks for generating new content can be run with something like
+
+To generate a set of _2_ movie translations run:
+ ```shell
+uv run -m jobs.main --type movie --batch_size 2
 ```
+Resulting plots are stored to the _dev_ bucket `dev_not_that_movie`.
+
+This will skip image generation (and use a template image instead)  to save OpenAI API call.
+To run with actual image generation, fetch an API key and enable stating runtime with:
+```shell
+export OPENAI_API_KEY=$(gcloud secrets versions access latest --secret not-that-movie-open-ai-api-key)
+ENV=stg uv run -m jobs.main --type movie --batch_size 2
+```
+
 
 > [!NOTE]  
 > The Google Translate API is rate limited. Each generation request includes multiple sections to translate. Therefore, is better to make several generation calls with moderate `batch_size` over a timeframe than to use a large batch size.
 
-> [!NOTE]  
-> When ran locally, the poster image generation is skipped in order to save API tokens. A template image will be used instead. 
 
 ### Unit tests
 Unit tests for the Python backend can be run with
@@ -68,10 +72,11 @@ The base set of movies to choose for the translations is definied as text files 
 
 On each translation request, a random subset of movies is selected but more weight is given to the more recent and top selling ones.
 
-New source lists can be added here, but a weight needs to be defined in [data/weight_config.json](data/weight_config.json) in order for it to be considered for
+New source lists can be added here, but a weight needs to be defined in [jobs/data/weight_config.json](jobs/data/weight_config.json) in order for it to be considered for
 the rotation.
 
 Movie names need to be in the format they are in the url of the corresponding Wikipedia article, ie. for the 1991 Disney _Beauty and the Beast_ use `Beauty_and_the_Beast_(1991_film)` as in https://en.wikipedia.org/wiki/Beauty_and_the_Beast_(1991_film)
 
-### Deploy to App Engine
-A GitHub Actions workflow deploys the project to App Engine on push to the main branch. Only the web service component is deployed. Scheduling for the content parsing endpoints is not included in this repository as App Engine does not support managing service specific schedules.
+### Deploy to production
+The webserver is deployed to App Engine. The background content generation tasks are deployed as Cloud Run jobs.
+The deployments are managed through GitHub Actions workflow.
