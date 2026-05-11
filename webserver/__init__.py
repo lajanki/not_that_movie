@@ -3,7 +3,6 @@ import logging
 from pathlib import Path
 
 
-ENV = os.getenv("ENV", "dev")
 BASE = Path(__file__).parent
 
 
@@ -19,5 +18,3 @@ def setup_logging():
     )
     console.setFormatter(fmt)
     logger.addHandler(console)
-
-    return logger

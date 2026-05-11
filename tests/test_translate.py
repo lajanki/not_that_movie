@@ -5,9 +5,13 @@ from unittest.mock import patch, Mock
 from bs4 import BeautifulSoup
 from pytest_schema import schema
 
-# Mock Google Cloud client before importing the main library
 with patch("google.cloud.storage.Client"):
-    from app import translate
+    from jobs import (
+        document_extract,
+        generate_movie,
+        utils
+    )
+
 
 
 @pytest.fixture
@@ -20,7 +24,7 @@ def mock_soup():
 
 def test_get_title(mock_soup):
     """Test content parser for title."""
-    assert translate.get_title(mock_soup) == "Alien"
+    assert document_extract.get_title(mock_soup) == "Alien"
 
 def test_get_plot(mock_soup):
     """Test content parser for plot section."""
@@ -40,7 +44,7 @@ def test_get_plot(mock_soup):
         "Third paragraph."
     )
 
-    assert translate.get_plot(mock_soup) == expected
+    assert document_extract.get_plot(mock_soup) == expected
 
 def test_get_cast(mock_soup):
     """Test content parser for cast section."""
@@ -57,7 +61,7 @@ def test_get_cast(mock_soup):
         "Most Promising Newcomer to Leading Film Role."
     )
     
-    assert translate.get_cast(mock_soup) == expected
+    assert document_extract.get_cast(mock_soup) == expected
 
 def test_get_infobox(mock_soup):
     """Test content parser for infobox."""
@@ -72,7 +76,7 @@ def test_get_infobox(mock_soup):
         "Budget": "$11 million",
         "Box office": "$184.7 million"
     }
-    assert translate.get_movie_infobox(mock_soup) == expected
+    assert document_extract.get_movie_infobox(mock_soup) == expected
 
 @pytest.mark.asyncio
 async def test_translation_chain(mocker):
@@ -80,12 +84,12 @@ async def test_translation_chain(mocker):
 
     # Mock language chain generation to a fixed sequence
     mocker.patch(
-        "app.translate.generate_language_chain",
+        "jobs.utils.generate_language_chain",
         Mock(return_value=["en", "fr", "de", "en"])
     )
 
     mock_translate = mocker.AsyncMock(return_value=Mock(text="Translated content."))
-    mocker.patch("app.translate.translator.translate", mock_translate)
+    mocker.patch("jobs.generate_movie.translator.translate", mock_translate)
 
     sections_to_translate = {
         "title": "A title",
@@ -93,7 +97,7 @@ async def test_translation_chain(mocker):
         "cast": "Tom Skellick as Jack\nNick Hardfloor as The Hammer",
         "infobox": "key1:value1\n\nkey2:value2"
     }
-    await translate.generate_translation(sections_to_translate, 2)
+    await generate_movie.generate_translation(sections_to_translate, 2)
 
     assert mock_translate.await_args_list == [
         mocker.call("A title", src="en", dest="fr"),
@@ -114,7 +118,7 @@ async def test_translation_chain(mocker):
 async def test_generated_schema(mocker):
     """Validate high level schema of the translated description."""
     mock_translate = mocker.AsyncMock(return_value=Mock(text="Translated content."))
-    mocker.patch("app.translate.translator.translate", mock_translate)
+    mocker.patch("jobs.generate_movie.translator.translate", mock_translate)
 
     sections_to_translate = {
         "title": "A title",
@@ -122,7 +126,7 @@ async def test_generated_schema(mocker):
         "cast": "Tom Skellick as Jack\nNick Hardfloor as The Hammer",
         "infobox": "key1:value1\n\nkey2:value2"
     }
-    translation = await translate.generate_translation(sections_to_translate, 2)
+    translation = await generate_movie.generate_translation(sections_to_translate, 2)
 
     expected_schema = schema({
         "plot": str,
@@ -150,12 +154,12 @@ async def test_generated_schema(mocker):
     ])
 def test_title_formatting(url_title, expected):
     """Test transformation from url encoded title to an article title."""
-    assert translate.format_title(url_title) == expected
+    assert document_extract.format_title(url_title) == expected
 
 
 def test_generate_language_chain():
     """Test language chain generation."""
     with patch("random.choices", return_value=["fr", "de", "es"]):
-        chain = translate.generate_language_chain(3, "se", "en")
+        chain = utils.generate_language_chain(3, "se", "en")
 
     assert chain == ["se", "fr", "de", "es", "en"]

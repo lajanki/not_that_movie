@@ -1,0 +1,78 @@
+
+## Cloud Storage
+Bucket creation commands for the dev bucket
+
+```shell
+gcloud storage buckets create \
+	gs://dev_not_that_movie \
+	--location europe-north1
+
+# Set lifecycle rule
+gcloud storage buckets \
+	update \
+	gs://dev_not_that_movie \
+	--lifecycle-file=./lifecycle_rule.json
+
+# Make objects public
+gcloud storage buckets \
+	add-iam-policy-binding \
+	gs://dev_not_that_movie \
+	--member=allUsers \
+	--role=roles/storage.objectViewer
+```
+
+## Jobs
+Build a common image for all jobs.
+Cloud Build expects a default Dockerfile,
+so we copy and rename the scoped Dockerfile first.
+```shell
+cp Dockerfile.jobs Dockerfile 
+gcloud builds submit \
+    --region europe-north1 \
+    --tag europe-north1-docker.pkg.dev/webhost-common/common/ntm-bg-job
+rm Dockerfile
+```
+
+Deploying the jobs:
+```shell
+gcloud run jobs deploy ntm-parse-movie \
+    --image europe-north1-docker.pkg.dev/webhost-common/common/ntm-bg-job \
+    --region europe-north1 \
+    --max-retries 0 \
+    --set-env-vars ENV=prod \
+    --set-secrets OPENAI_API_KEY=not-that-movie-open-ai-api-key:1 \
+    --args=--type,movie,--batch_size,1 \
+    --service-account not-that-movie-worker@webhost-common.iam.gserviceaccount.com
+
+
+gcloud run jobs deploy ntm-parse-person \
+    --image europe-north1-docker.pkg.dev/webhost-common/common/ntm-bg-job \
+    --region europe-north1 \
+    --max-retries 0 \
+    --set-env-vars ENV=prod \
+    --set-secrets OPENAI_API_KEY=not-that-movie-open-ai-api-key:1 \
+    --args=--type,person,--batch_size,1 \
+    --service-account not-that-movie-worker@webhost-common.iam.gserviceaccount.com
+```
+
+## Scheduling
+Unlike jobs, these will conflict with existing jobs, so they are not managed by the deployment workflow.
+```shell
+gcloud scheduler jobs create http ntm-parse-movie \
+    --schedule "0 3 * * *" \
+    --time-zone Europe/Helsinki \
+    --uri https://run.googleapis.com/v2/projects/webhost-common/locations/europe-north1/jobs/ntm-parse-movie:run \
+    --description "Parse new movie content" \
+    --location europe-west1 \
+    --http-method POST \
+    --oauth-service-account-email not-that-movie-worker@webhost-common.iam.gserviceaccount.com
+
+gcloud scheduler jobs create http ntm-parse-person \
+    --schedule "10 3 * * *" \
+    --time-zone Europe/Helsinki \
+    --uri https://run.googleapis.com/v2/projects/webhost-common/locations/europe-north1/jobs/ntm-parse-person:run \
+    --description "Parse new person content" \
+    --location europe-west1 \
+    --http-method POST \
+    --oauth-service-account-email not-that-movie-worker@webhost-common.iam.gserviceaccount.com
+```

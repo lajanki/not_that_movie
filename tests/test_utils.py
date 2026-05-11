@@ -1,6 +1,6 @@
 import pytest
 
-from app import (
+from jobs import (
 	utils
 )
 

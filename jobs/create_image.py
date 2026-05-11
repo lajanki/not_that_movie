@@ -1,18 +1,19 @@
 import base64
 from io import BytesIO
 import logging
+import os
 
 from openai import OpenAI
 from PIL import Image
 
-from app import utils, BASE
+from jobs import BASE
 
 
 logger = logging.getLogger(__name__)
 
 def create_image(prompt):
 	"""Generate an image using OpenAI image model."""
-	api_key = utils.get_openai_secret()
+	api_key = os.environ["OPENAI_API_KEY"]
 	client = OpenAI(api_key=api_key)
 
 	img = client.images.generate(
@@ -35,14 +36,8 @@ def create_image(prompt):
 	fp.seek(0)
 	return fp.getvalue()
 
-
-def create_test_image(*args):
-	"""Get test image content."""
-	logger.info("Using default poster image")
-	with open(BASE / "static" / "default_poster.png", "rb") as f:
+def get_template_image(*args):
+	"""Get template image content."""
+	logger.warning("Using default poster image")
+	with open(BASE / "img" / "default_poster.png", "rb") as f:
 		return f.read()
-
-create_image_by_env = {
-	"prod": create_image,
-	"dev": create_test_image
-}
