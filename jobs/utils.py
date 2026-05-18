@@ -25,7 +25,9 @@ def generate_language_chain(k, source_language, target_language):
 	Return:
 		A list of language codes to use for translation in order.
 	"""
-	languages = random.choices(list(LANGUAGES.keys()), k=k)
+	# Ensure none of the intermediary languages are the same as source or target language
+	available_languages = set(LANGUAGES.keys()) - {source_language, target_language}
+	languages = random.choices(list(available_languages), k=k)
 	languages = [source_language] + languages + [target_language]
 	return languages
 
