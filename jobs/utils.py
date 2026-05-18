@@ -168,3 +168,8 @@ def select_weighted_list_of_movie_names(batch_size):
 			source_titles.extend(random.sample(titles, c[file]))
 
 	return source_titles
+
+def is_mostly_ascii(text, threshold=0.9):
+	"""Check if the text is mostly ascii characters."""
+	ascii_count = sum(1 for c in text if 32 <= ord(c) <= 126)
+	return ascii_count / len(text) > threshold

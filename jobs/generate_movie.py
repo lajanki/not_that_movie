@@ -1,3 +1,4 @@
+from difflib import SequenceMatcher
 import logging
 from datetime import date
 
@@ -70,8 +71,22 @@ async def batch_translate_and_upload(batch_size: int, k: int = 2) -> None:
 
 		result = await generate_translation(article_data, k)
 
-		logger.debug("Original plot:\n%s", plot)
-		logger.debug("Translated plot:\n%s", result.content["plot"])
+		# Reject the result if the output does not seem English
+		if not utils.is_mostly_ascii(result.content["plot"]):
+			logger.warning("Rejected translation: output does not appear to be English.")
+			logger.info("Translated plot:\n%s", result.content["plot"])
+			continue
+
+		# Compute a similarity score between original and translated plot to
+		# have a rough estimate of how much the meaning changed during translation.
+		s1 = plot.split("\n")[0]
+		s2 = result.content["plot"].split("\n")[0]
+
+		logger.debug("Original plot preface:\n%s", s1)
+		logger.debug("Translated plot preface:\n%s", s2)
+
+		res = SequenceMatcher(None, s1, s2).ratio()
+		logger.info("Plot similarity score: %.2f", res)
 
 		gcs_utils.upload(
 			result.model_dump_json(),

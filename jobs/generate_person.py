@@ -7,6 +7,7 @@ from jobs import (
 	env_config,
 	generate_movie,
 	gcs_utils,
+	utils,
 	ENV,
 	BASE,
 )
@@ -61,6 +62,10 @@ async def batch_translate_and_upload(batch_size: int, k: int = 2) -> None:
 
 		result = await generate_movie.generate_translation(article_data, k)
 		
+		if not utils.is_mostly_ascii(result.content["description"]):
+			logger.warning("Rejected translation: output does not appear to be English.")
+			continue
+
 		gcs_utils.upload(
 			result.model_dump_json(),
 			f"people/{date.today().strftime('%Y-%m-%d')}/{title}/description.json"
