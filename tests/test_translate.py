@@ -11,6 +11,7 @@ with patch("google.cloud.storage.Client"):
         generate_movie,
         utils
     )
+    from jobs.models import ArticleData
 
 
 
@@ -91,16 +92,28 @@ async def test_translation_chain(mocker):
     mock_translate = mocker.AsyncMock(return_value=Mock(text="Translated content."))
     mocker.patch("jobs.generate_movie.translator.translate", mock_translate)
 
-    sections_to_translate = {
-        "title": "A title",
-        "plot": "Meaningful description.",
-        "cast": "Tom Skellick as Jack\nNick Hardfloor as The Hammer",
-        "infobox": "key1:value1\n\nkey2:value2"
-    }
-    await generate_movie.generate_translation(sections_to_translate, 2)
+    article_data = ArticleData(
+        title="A title",
+        content={
+            "plot": "Meaningful description.",
+            "cast": "Tom Skellick as Jack\nNick Hardfloor as The Hammer",
+        },
+        infobox={
+            "key1": "value1",
+            "key2": "value2"
+        },
+        metadata={},
+        img={}
+    )
+    await generate_movie.generate_translation(article_data, 2)
 
+    # Asserts translations calls made.
+    # Note: order matters here.
     assert mock_translate.await_args_list == [
         mocker.call("A title", src="en", dest="fr"),
+        mocker.call("Translated content.", src="fr", dest="de"),
+        mocker.call("Translated content.", src="de", dest="en"),
+        mocker.call("key1:value1\n\nkey2:value2", src="en", dest="fr"),
         mocker.call("Translated content.", src="fr", dest="de"),
         mocker.call("Translated content.", src="de", dest="en"),
         mocker.call("Meaningful description.", src="en", dest="fr"),
@@ -108,36 +121,65 @@ async def test_translation_chain(mocker):
         mocker.call("Translated content.", src="de", dest="en"),
         mocker.call("Tom Skellick as Jack\nNick Hardfloor as The Hammer", src="en", dest="fr"),
         mocker.call("Translated content.", src="fr", dest="de"),
-        mocker.call("Translated content.", src="de", dest="en"),
-        mocker.call("key1:value1\n\nkey2:value2", src="en", dest="fr"),
-        mocker.call("Translated content.", src="fr", dest="de"),
         mocker.call("Translated content.", src="de", dest="en")
     ]
 
 @pytest.mark.asyncio
-async def test_generated_schema(mocker):
-    """Validate high level schema of the translated description."""
-    mock_translate = mocker.AsyncMock(return_value=Mock(text="Translated content."))
+async def test_translation_result(mocker):
+    """Validate translation result.
+    Non-content fields should not be modified.
+    """
+
+    def translate_side_effect(text, src=None, dest=None):
+        # Custom side effect to return different translations based on input text.
+        # If the text looks like the infobox (contains known keys), return a string that
+        # can be parsed back to a dict. This prevents the newline_string_to_dict helper
+        # from converting the mock translation to an empty dict.
+        if ("key1" in text and "key2" in text):
+            return Mock(text="translated_key1:Translated content.\n\ntranslated_key2:Translated content.")
+        return Mock(text="Translated content.")
+
+    mock_translate = mocker.AsyncMock(side_effect=translate_side_effect)
     mocker.patch("jobs.generate_movie.translator.translate", mock_translate)
 
-    sections_to_translate = {
-        "title": "A title",
-        "plot": "Meaningful description.",
-        "cast": "Tom Skellick as Jack\nNick Hardfloor as The Hammer",
-        "infobox": "key1:value1\n\nkey2:value2"
-    }
-    translation = await generate_movie.generate_translation(sections_to_translate, 2)
-
-    expected_schema = schema({
-        "plot": str,
-        "cast": str,
-        "infobox": dict,
-        "metadata": {
-            "title": str
+    article_data = ArticleData(
+        title="A title",
+        content={
+            "plot": "Meaningful description.",
+            "cast": "Tom Skellick as Jack\nNick Hardfloor as The Hammer",
+        },
+        infobox={
+            "key1": "value1",
+            "key2": "value2"
+        },
+        metadata={
+            "key": "value"
+        },
+        img={
+            "url": "https://example.com/image.png"
         }
-    })
+    )
 
-    assert expected_schema.is_valid(translation)
+    translation = await generate_movie.generate_translation(article_data, 2)
+
+    assert translation == ArticleData(
+        title="Translated content.",
+        content={
+            "plot": "Translated content.",
+            "cast": "Translated content."
+        },
+        infobox={
+            "translated_key1": "Translated content.",
+            "translated_key2": "Translated content."
+        },
+        metadata={
+            "key": "value"
+        },
+        img={
+            "url": "https://example.com/image.png"
+        }
+    )
+
 
 @pytest.mark.parametrize(
     "url_title,expected",

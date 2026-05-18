@@ -700,6 +700,7 @@ dependencies = [
     { name = "gunicorn" },
     { name = "openai" },
     { name = "pillow" },
+    { name = "pydantic" },
 ]
 
 [package.dev-dependencies]
@@ -720,6 +721,7 @@ requires-dist = [
     { name = "gunicorn" },
     { name = "openai", specifier = ">=2.33.0" },
     { name = "pillow", specifier = ">=12.2.0" },
+    { name = "pydantic", specifier = ">=2.13.3" },
 ]
 
 [package.metadata.requires-dev]

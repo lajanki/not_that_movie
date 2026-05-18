@@ -1,4 +1,3 @@
-import json
 import logging
 from datetime import date
 
@@ -11,6 +10,7 @@ from jobs import (
 	utils,
 	document_extract,
 )
+from jobs.models import ArticleData
 
 
 logger = logging.getLogger(__name__)
@@ -21,7 +21,7 @@ create_image = env_config.create_image_[ENV]
 
 BASE_URL = "https://en.wikipedia.org/api/rest_v1/page/html"
 
-async def batch_translate_and_upload(batch_size, k=2):
+async def batch_translate_and_upload(batch_size: int, k: int = 2) -> None:
 	"""Translate a random sample of titles and store results to
 	Cloud Storage bucket.
 	Args:
@@ -48,43 +48,56 @@ async def batch_translate_and_upload(batch_size, k=2):
 			f"movies/{date.today().strftime('%Y-%m-%d')}/{title}/image.png",
 			content_type="image/png"
 		)
+		
+		# Create an ArticleData object for the translation
+		plot = document_extract.get_plot(soup)
+		article_data = ArticleData(
+			title=title,
+			content={
+				"plot": plot,
+				"cast": document_extract.get_cast(soup)
+			},
+			infobox=document_extract.get_movie_infobox(soup),
+			metadata={
+				"original_title": title,
+				"url_title": url_title
+			},
+			img={
+				"prompt": prompt,
+				"url": img_blob.public_url
+			}
+		)
 
-		# Generate a translation
-		sections_to_translate = {
-			"title": title,
-			"plot": document_extract.get_plot(soup),
-			"cast": document_extract.get_cast(soup),
-			"infobox": utils.dict_to_newline_string(document_extract.get_movie_infobox(soup))
-		}
-		result = await generate_translation(sections_to_translate, k)
+		result = await generate_translation(article_data, k)
 
-		# Add the original titles
-		result["metadata"].update({
-			"original_title": title,
-			"url_title": url_title
-		})
-
-		# Add a (public) link to the related image
-		result["img"] = img_blob.public_url
+		logger.debug("Original plot:\n%s", plot)
+		logger.debug("Translated plot:\n%s", result.content["plot"])
 
 		gcs_utils.upload(
-			json.dumps(result),
+			result.model_dump_json(),
 			f"movies/{date.today().strftime('%Y-%m-%d')}/{title}/description.json"
 		)
 
-async def generate_translation(sections_to_translate, k, target_language="en"):
-	"""Translate a single Wikipedia movie article.
+async def generate_translation(article_data: ArticleData, k: int, target_language: str = "en") -> ArticleData:
+	"""Translate a Wikipedia movie article.
 	Args:
-		sections_to_translate (dict): A mapping of sections fron the original article to translate
+		article_data (ArticleData): The article data to translate
 		k (int): number of intermediary languages to translate to
 		target_language (str): language code for the final output language
 	Return:
-		A dict of the trasnalted section, similar to the input
+		The translated article data as an ArticleData object
 	"""
 	translated_sections = {}
 	chain = utils.generate_language_chain(k, source_language="en", target_language=target_language)
 	language_names = " => ".join([LANGUAGES[code] for code in chain])
 	logger.info("Languages to use %s", language_names)
+
+	# Gather all sections to translate in a single flat dict for easier processing
+	sections_to_translate = {
+		"title": article_data.title,
+		"infobox": utils.dict_to_newline_string(article_data.infobox),
+	}
+	sections_to_translate.update(article_data.content)
 
 	for idx, section in enumerate(sections_to_translate):
 		logger.info("Translating %s (%d of %d)", section, idx+1, len(sections_to_translate))
@@ -97,16 +110,18 @@ async def generate_translation(sections_to_translate, k, target_language="en"):
 		for previous, current in zip(chain, chain[1:]):
 			translated = await translator.translate(text, src=previous, dest=current)
 			text = translated.text
-		
+
 		text = utils.cleanup_translation(text)
 		translated_sections[section] = text
-
-	# Convert infobox back to a dict
-	translated_sections["infobox"] = utils.newline_string_to_dict(translated_sections["infobox"])
-
-	# Move translated title to a dedicated metadata section
-	translated_sections["metadata"] = {
-		"title": translated_sections.pop("title").title()
-	}
 	
-	return translated_sections
+	# Build a new ArticleData object with the translated content;
+	# parse infobox back to dict and keep non-content fields unchanged.
+	translated = ArticleData(
+		title=translated_sections["title"],
+		content={key: translated_sections[key] for key in article_data.content},
+		infobox=utils.newline_string_to_dict(translated_sections["infobox"]),
+		metadata=article_data.metadata,
+		img=article_data.img
+	)
+
+	return translated
