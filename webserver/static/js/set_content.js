@@ -22,7 +22,6 @@ $(function() {
 function setContent(path) {
     $.ajax({
         beforeSend: function(request) {
-            request.setRequestHeader("X-Button-Callback", "true");
             // Hide content and display the loader
             $(".loader").show();
             $("#movie_title").empty();
@@ -38,13 +37,13 @@ function setContent(path) {
         success: function(data) {
             // Set description content and hide loader
             $(".loader").hide();
-            $("#movie_title").html(data.metadata.title);
+            $("#movie_title").html(data.title);
             $("#original_movie_title").html(
                 `<a href="https://en.wikipedia.org/wiki/${data.metadata.url_title}">
                     (${data.metadata.original_title})</a>`
             );
-            $("#plot").html(data.plot);
-            $("#cast").html(data.cast);
+            $("#plot").html(data.content.plot);
+            $("#cast").html(data.content.cast);
             updateInfobox("#movie-info-table", data);
         },
         error: function(jqXHR, textStatus, errorThrown) {
@@ -65,14 +64,14 @@ function setContent(path) {
  * @param  {Object} data    the data to write
  */
 function updateInfobox(tableId, data) {
-    $(tableId + " img.infobox-image-ref").attr("src", data.img);
+    $(tableId + " img.infobox-image-ref").attr("src", data.img.url);
 
     // Dynamically create a table row for each infobox item
     var tableHtml = "";
-    for (const key in data.infobox) {
+    for (const key in data.content.infobox) {
         tableHtml += `<tr class="infobox-data-row">
             <th class="infobox-header">${key}</th>
-            <td class="infobox-data">${data.infobox[key]}</td>
+            <td class="infobox-data">${data.content.infobox[key]}</td>
         </tr>`
     }
     $(tableId + " tr:last").after(tableHtml);
@@ -105,7 +104,6 @@ function listMovies() {
 function setPersonContent() {
     $.ajax({
         beforeSend: function(request) {
-            request.setRequestHeader("X-Button-Callback", "true");
             $("#person_title").empty();
             $("#original_person_title").empty();
             $("#person-description").empty();
@@ -115,19 +113,19 @@ function setPersonContent() {
         dataType: "json",
         url: "/_get_person",
         success: function(data) {
-            $("#person_title").html(data.metadata.title);
+            $("#person_title").html(data.title);
             $("#original_person_title").html(
                 `<a href="https://en.wikipedia.org/wiki/${data.metadata.url_title}">
                     (${data.metadata.original_title})</a>`
             );
 
-            $("#person-description").html(data.description);
+            $("#person-description").html(data.content.description);
             $(".loader").hide();
             updateInfobox("#person-info-table", data);
 
             // update metadata table image labels
-            $(".infobox-image-ref")[1].alt = data.img_prompt + " | Image created with OpenAI";
-            $(".infobox-image-ref")[1].title = data.img_prompt + " | Image created with OpenAI";
+            $(".infobox-image-ref")[1].alt = data.img.prompt + " | Image created with OpenAI";
+            $(".infobox-image-ref")[1].title = data.img.prompt + " | Image created with OpenAI";
         },
         error: function(jqXHR, textStatus, errorThrown) {
             $("#person_title").html("<h1>Something went wrong, try again</h1>");

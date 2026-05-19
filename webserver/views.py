@@ -30,6 +30,7 @@ def fetch_movie_description():
 	else:
 		data = gcs_utils.download_random_content(ContentType.MOVIE.name)
 
+	data = utils.convert_article_data_schema(data)
 	data = utils.format_as_html(data)
 	return data, 200
 	
@@ -43,5 +44,7 @@ def fetch_movie_index():
 def fetch_person_description():
 	"""Fetch a random preson from the bucket."""
 	data = gcs_utils.download_random_content(ContentType.PERSON.name)
+	
+	data = utils.convert_article_data_schema(data)
 	data = utils.format_as_html(data)
 	return data, 200
