@@ -1,4 +1,3 @@
-import json
 import logging
 import random
 from datetime import date
@@ -7,18 +6,19 @@ from jobs import (
 	document_extract,
 	env_config,
 	generate_movie,
-	utils,
 	gcs_utils,
+	utils,
 	ENV,
 	BASE,
 )
+from jobs.models import ArticleData
 
 
 logger = logging.getLogger(__name__)
 create_image = env_config.create_image_[ENV]
 
 
-async def batch_translate_and_upload(batch_size, k=2):
+async def batch_translate_and_upload(batch_size: int, k: int = 2) -> None:
 	"""Translate a random sample of titles for person articles and store results to
 	Cloud Storage bucket.
 	Args:
@@ -44,28 +44,34 @@ async def batch_translate_and_upload(batch_size, k=2):
 			content_type="image/png"
 		)
 
-		# Generate a translation
-		sections_to_translate = {
-			"title": title,
-			"description": document_extract.get_description(soup),
-			"infobox": utils.dict_to_newline_string(document_extract.get_person_infobox(soup))
-		}
-		result = await generate_movie.generate_translation(sections_to_translate, k)
-		
-		result["img"] = img_blob.public_url
-		result["img_prompt"] = prompt
+		article_data = ArticleData(
+			title=title,
+			content={
+				"description": document_extract.get_description(soup),
+			},
+			infobox=document_extract.get_person_infobox(soup),
+			metadata={
+				"original_title": title,
+				"url_title": url_title
+			},
+			img={
+				"prompt": prompt,
+				"url": img_blob.public_url
+			}
+		)
 
-		result["metadata"].update({
-			"original_title": title,
-			"url_title": url_title
-		})
+		result = await generate_movie.generate_translation(article_data, k)
+		
+		if not utils.is_mostly_ascii(result.content["description"]):
+			logger.warning("Rejected translation: output does not appear to be English.")
+			continue
 
 		gcs_utils.upload(
-			json.dumps(result),
+			result.model_dump_json(),
 			f"people/{date.today().strftime('%Y-%m-%d')}/{title}/description.json"
 		)
 
-def get_people_list():
+def get_people_list() -> list[str]:
 	"""Get a list of people from people.txt."""
 	with open(BASE / "data" / "people.txt") as f:
 		people = [
@@ -76,7 +82,7 @@ def get_people_list():
 
 	return people
 
-def get_person_portrait_prompt(category):
+def get_person_portrait_prompt(category: str) -> str:
 	"""Select a random prompt for a person portrait image.
 	Args:
 		category (str): the category of prompts to choose from: actor|director

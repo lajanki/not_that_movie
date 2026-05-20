@@ -25,7 +25,9 @@ def generate_language_chain(k, source_language, target_language):
 	Return:
 		A list of language codes to use for translation in order.
 	"""
-	languages = random.choices(list(LANGUAGES.keys()), k=k)
+	# Ensure none of the intermediary languages are the same as source or target language
+	available_languages = set(LANGUAGES.keys()) - {source_language, target_language}
+	languages = random.choices(list(available_languages), k=k)
 	languages = [source_language] + languages + [target_language]
 	return languages
 
@@ -67,29 +69,33 @@ def newline_string_to_dict(text):
 
 	return data
 
-def format_as_html(content):
+def format_as_html(article_data):
 	"""Convert various sections parsed from an article as html.
 	
 	Args:
-		content (dict): a dict of sections to format, e.g. plot, cast, description
+		article_data (dict): article content represented as a dict.
 	Return:
 		A dict with the same keys as the input but with the content formatted as html.
 	"""
-	# plot and cast for a movie article
-	plot = "".join([ f"<p>{p}</p>" for p in content.get("plot", "").split("\n\n") if p ])
-	cast_items = [ f"<li>{p}</li>" for p in content.get("cast", "").split("\n") if p ]
+	## Movie article:
+	# Wrap plot paragraphs in <p> tags
+	plot = "".join([ f"<p>{p}</p>" for p in article_data["content"].get("plot", "").split("\n\n") if p ])
+
+	# Wrap cast items in <li> tags
+	cast_items = [ f"<li>{p}</li>" for p in article_data["content"].get("cast", "").split("\n") if p ]
 	cast = "<ul>" + "".join(cast_items) + "</ul>"
 
-	# description for a person article
-	description = "".join([ f"<p>{p}</p>" for p in content.get("description", "").split("\n\n") if p ])
+	## Person article:
+	# Wrap description  paragraphs in <p> tags
+	description = "".join([ f"<p>{p}</p>" for p in article_data["content"].get("description", "").split("\n\n") if p ])
 
-	content.update({
+	article_data["content"].update({
 		"plot": plot,
 		"cast": cast,
 		"description": description
 	})
 
-	return content
+	return article_data
 
 def cleanup_source_text(text, replace_newlines=True):
 	"""Cleanup various whitespace and meta tokens from parsed html
@@ -166,3 +172,34 @@ def select_weighted_list_of_movie_names(batch_size):
 			source_titles.extend(random.sample(titles, c[file]))
 
 	return source_titles
+
+def is_mostly_ascii(text, threshold=0.9):
+	"""Check if the text is mostly ascii characters."""
+	ascii_count = sum(1 for c in text if 32 <= ord(c) <= 126)
+	return ascii_count / len(text) > threshold
+
+def convert_article_data_schema(article_data):
+	"""
+	Convert old movie data format (dict) to new schema format.
+
+	Can be removed once all old format GCS data files have expired.
+	"""
+
+	# Do nothing if already in new format
+	if "content" in article_data:
+		return article_data
+
+	return {
+		"title": article_data.get("metadata", {}).get("title"),
+		"content": {
+			"plot": article_data.get("plot", ""),
+			"cast": article_data.get("cast", ""),
+			"description": article_data.get("description", "")
+		},
+		"infobox": article_data.get("infobox", {}),
+		"metadata": article_data.get("metadata", {}),
+		"img": {
+			"prompt": "",
+			"url": article_data.get("img")
+		}
+	}
