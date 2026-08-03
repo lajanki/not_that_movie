@@ -138,6 +138,48 @@ def cleanup_translation(s):
 	s = re.sub(r"([a-z])(\.)([A-Z])", r"\g<1>. \g<3>", s)
 	return s
 
+_ENTITY_FLATTEN_MAP = {
+	"executive officer": "assistant boss",
+	"warrant officer":   "ship worker",
+	"science officer":   "science person",
+	"commanding officer": "big boss",
+	"chief of staff":    "main helper",
+	"captain":           "boss",
+	"commander":         "leader",
+	"lieutenant":        "junior boss",
+	"sergeant":          "group boss",
+	"admiral":           "big boss",
+	"general":           "war boss",
+	"colonel":           "army boss",
+	"detective":         "police man",
+	"inspector":         "checking person",
+	"sheriff":           "local boss",
+	"attorney":          "court person",
+	"lawyer":            "argument person",
+	"prosecutor":        "accuser person",
+	"scientist":         "science person",
+	"engineer":          "fix person",
+	"pilot":             "flying person",
+	"astronaut":         "space person",
+	"surgeon":           "cutting doctor",
+	"agent":             "secret worker",
+	"alien":             "strange creature",
+	"spaceship":         "space vehicle",
+	"spacecraft":        "space vehicle",
+	"kingdom":           "country",
+	"empire":            "big country",
+	"princess":          "important daughter",
+	"prince":            "important son",
+	"corporation":       "big company",
+}
+
+def flatten_entities(text: str) -> str:
+	# Longest entries first to prevent partial matches (e.g. "executive officer" before "officer")
+	replacements = sorted(_ENTITY_FLATTEN_MAP.items(), key=lambda item: -len(item[0]))
+	for source, target in replacements:
+		text = re.sub(rf"\b{re.escape(source)}\b", target, text, flags=re.IGNORECASE)
+	return text
+
 def select_weighted_list_of_movie_names(batch_size):
 	"""Generate a random list of movie names based on source data files.
 	

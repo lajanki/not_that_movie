@@ -1,6 +1,7 @@
 from difflib import SequenceMatcher
 import logging
 from datetime import date
+from pathlib import Path
 
 from googletrans import Translator, LANGUAGES
 
@@ -82,11 +83,13 @@ async def batch_translate_and_upload(batch_size: int, k: int = 2) -> None:
 		s1 = plot.split("\n")[0]
 		s2 = result.content["plot"].split("\n")[0]
 
-		logger.debug("Original plot preface:\n%s", s1)
-		logger.debug("Translated plot preface:\n%s", s2)
-
 		res = SequenceMatcher(None, s1, s2).ratio()
 		logger.info("Plot similarity score: %.2f", res)
+
+		output_dir = Path("output") / date.today().strftime("%Y-%m-%d") / title
+		output_dir.mkdir(parents=True, exist_ok=True)
+		(output_dir / "original.json").write_text(article_data.model_dump_json(indent=2))
+		(output_dir / "description.json").write_text(result.model_dump_json(indent=2))
 
 		gcs_utils.upload(
 			result.model_dump_json(),
@@ -121,10 +124,28 @@ async def generate_translation(article_data: ArticleData, k: int, target_languag
 		if len(text) > 5000:
 			logger.info("%s length=%d, truncating to 5000 characters", section, len(text))
 			text = text[:5000]
-		
-		for previous, current in zip(chain, chain[1:]):
-			translated = await translator.translate(text, src=previous, dest=current)
-			text = translated.text
+
+		if section == "plot":
+			# Each paragraph gets an independent language chain for more varied degradation
+			translated_paragraphs = []
+			for para in text.split("\n\n"):
+				if not para.strip():
+					translated_paragraphs.append(para)
+					continue
+
+				para_chain = utils.generate_language_chain(k, source_language="en", target_language=target_language)
+				logger.debug("Paragraph chain: %s", " => ".join([LANGUAGES[code] for code in para_chain]))
+				for previous, current in zip(para_chain, para_chain[1:]):
+					result = await translator.translate(para, src=previous, dest=current)
+					para = result.text
+				translated_paragraphs.append(para)
+
+			text = "\n\n".join(translated_paragraphs)
+			text = utils.flatten_entities(text)
+		else:
+			for previous, current in zip(chain, chain[1:]):
+				translated = await translator.translate(text, src=previous, dest=current)
+				text = translated.text
 
 		text = utils.cleanup_translation(text)
 		translated_sections[section] = text
