@@ -1,4 +1,4 @@
-import os
+from pathlib import Path
 import pytest
 from unittest.mock import patch, Mock, mock_open
 
@@ -17,7 +17,7 @@ with patch("google.cloud.storage.Client"):
 @pytest.fixture
 def mock_soup():
     """Create a soup object from the local source html."""
-    source_html = os.path.join(os.path.dirname(__file__), "mocks", "Mike Myers.html")
+    source_html = Path(__file__).parent / "mocks" / "Mike Myers.html"
     with open(source_html) as f:
         return BeautifulSoup(f.read(), "html.parser")
 
